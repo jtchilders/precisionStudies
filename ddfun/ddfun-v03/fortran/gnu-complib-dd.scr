@@ -1,0 +1,1 @@
+gfortran -O3 -fno-expensive-optimizations -c ddfuna.f90 ddfune.f90 ddmodule.f90 second.f90

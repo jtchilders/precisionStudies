@@ -1,0 +1,38 @@
+Poisson Phi_2 computation and analysis:
+ipal =   1; kd =  10; kp =   3; kq =   3; mpi =   8; n =   5
+ndp =    32; nep =   -29
+Alpha CPU time =        0.00
+Alpha =
+3.0382849991551410099223442058423e0     
+PSLQM1 integer relation detection: n =    5
+Iteration      0   Initialization
+Iteration      0   Start iterations
+Iteration     25
+Iteration     39   itermp: Small value in y =   4.342423e  -29
+Iteration     39   Relation detected
+Min, max of y =   4.342423e  -29   1.525130e  -14
+Max. bound =   1.027041e    3
+Index of relation =   3   Norm =   1.544767e    3   Residual =   4.342423e  -29
+CPU times:
+        0.00        0.00
+PSLQM1 CPU time =        0.00
+Total CPU time =        0.00
+
+Recovered half relation: 0 =
+                                -1264.00
+                                  -96.00
+                                  856.00
+                                 -216.00
+                                    1.00
+
+Recovered full relation: 0 =
+                                    1.00
+                                 -216.00
+                                  860.00
+                                 -744.00
+                                  454.00
+                                 -744.00
+                                  860.00
+                                 -216.00
+                                    1.00
+TEST PASSED

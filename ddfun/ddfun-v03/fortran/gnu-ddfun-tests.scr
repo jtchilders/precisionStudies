@@ -1,0 +1,19 @@
+echo "compiling library"
+./gnu-complib-dd.scr
+echo "testddfun"
+./gnu-complink-dd.scr testddfun
+./testddfun > testddfun.txt
+tail -1 testddfun.txt
+echo "tpslqm1dd"
+./gnu-complink-dd.scr tpslqm1dd
+./tpslqm1dd > tpslqm1dd.txt
+tail -1 tpslqm1dd.txt
+echo "tquaddd"
+./gnu-complink-dd.scr tquaddd
+./tquaddd > tquaddd.txt
+tail -1 tquaddd.txt
+echo "tpphixdd"
+./gnu-complink-dd.scr tpphixdd
+./tpphixdd > tpphixdd.txt
+tail -1 tpphixdd.txt
+
