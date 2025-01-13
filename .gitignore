@@ -3,6 +3,9 @@
 *.error
 *.cobaltlog
 
+# cmake
+build
+
 # Prerequisites
 *.d
 
