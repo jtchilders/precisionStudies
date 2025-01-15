@@ -1,76 +1,86 @@
 #include "ddouble.h"
 
-#ifdef __CUDACC__
-#define DD_INLINE __host__ __device__ inline
-#else
-#define DD_INLINE inline
-#endif
 
-// Constants for splitting
-static const double SPLIT = 134217729.0; // 2^27+1
+// Assume ddmul, ddsub, ddadd, dddiv, etc. are implemented as operators on ddouble.
+// Assume that ddouble::to_double() returns a double approximation and that
+// we have a working constructor ddouble(double) and ddouble(int).
+std::string ddouble::str() const {
+    if (hi == 0.0 && lo == 0.0) {
+        return "0.0";
+    }
 
-DD_INLINE ddouble ddouble::quick_two_sum(double a, double b) {
-    double s = a + b;
-    double e = b - (s - a);
-    return ddouble::from_two_doubles(s, e);
+    // Determine sign and make absolute value
+    bool negative = hi < 0 || (hi == 0 && lo < 0);
+    ddouble abs_val = negative ? ddouble(-hi, -lo) : *this;
+
+    // Scale abs_val to [1, 10) using npwr and calculate exponent
+    const ddouble ten(10.0);
+    int exponent = 0;
+    if (abs_val.hi >= 10.0) {
+        exponent = static_cast<int>(std::log10(abs_val.hi));
+        abs_val = abs_val / ten.npwr(exponent);
+    } else if (abs_val.hi < 1.0) {
+        exponent = static_cast<int>(std::log10(abs_val.hi)) - 1;
+        abs_val = abs_val / ten.npwr(exponent);
+    }
+
+    // Adjust exponent if necessary
+    while (abs_val.hi >= 10.0) {
+        abs_val = abs_val / ten;
+        ++exponent;
+    }
+    while (abs_val.hi < 1.0) {
+        abs_val = abs_val * ten;
+        --exponent;
+    }
+
+    // Extract integer part of mantissa
+    int first_digit = static_cast<int>(abs_val.hi);
+    ddouble fraction = abs_val - ddouble(first_digit);
+
+    // Build string representation
+    std::ostringstream oss;
+    if (negative) {
+        oss << "-";
+    }
+    oss << first_digit << ".";
+
+    // Extract fractional digits using chunks
+    const int DIGITS = 31; // Total digits after the decimal point
+    for (int i = 0; i < DIGITS; ++i) {
+        fraction = fraction * ten;
+        int digit = static_cast<int>(fraction.hi);
+        oss << digit;
+        fraction = fraction - ddouble(digit);
+    }
+
+    // Round last digit if necessary
+    if (fraction.hi >= 0.5) {
+        std::string result = oss.str();
+        for (int i = result.size() - 1; i >= 0; --i) {
+            if (result[i] == '.') continue;
+            if (result[i] == '9') {
+                result[i] = '0';
+            } else {
+                result[i] += 1;
+                break;
+            }
+        }
+        oss.str("");
+        oss << result;
+    }
+
+    // Append exponent
+    oss << "e" << (exponent >= 0 ? "+" : "") << exponent;
+    return oss.str();
 }
 
-DD_INLINE ddouble ddouble::two_sum(double a, double b) {
-    double s = a + b;
-    double bb = s - a;
-    double e = (a - (s - bb)) + (b - bb);
-    return ddouble::from_two_doubles(s, e);
-}
 
-DD_INLINE ddouble ddouble::two_prod(double a, double b) {
-    double p = a * b;
-    double a_h = (double)((long long)(a * SPLIT));
-    a_h = a_h - (a_h - a);
-    double a_l = a - a_h;
-    double b_h = (double)((long long)(b * SPLIT));
-    b_h = b_h - (b_h - b);
-    double b_l = b - b_h;
-    double e = ((a_h * b_h - p) + a_h * b_l + a_l * b_h) + a_l * b_l;
-    return ddouble::from_two_doubles(p, e);
-}
-
-// ddouble addition
-DD_INLINE ddouble ddouble::operator+(const ddouble &b) const {
-    // Using Knuth's TwoSum
-    ddouble t = two_sum(hi, b.hi);
-    double e = lo + b.lo;
-    ddouble r = two_sum(t.hi, t.lo + e);
-    return r;
-}
-
-// ddouble subtraction
-DD_INLINE ddouble ddouble::operator-(const ddouble &b) const {
-    ddouble t = two_sum(hi, -b.hi);
-    double e = lo - b.lo;
-    ddouble r = two_sum(t.hi, t.lo + e);
-    return r;
-}
-
-// ddouble multiplication
-DD_INLINE ddouble ddouble::operator*(const ddouble &b) const {
-    // (hi,lo)*(b.hi,b.lo)
-    ddouble p1 = two_prod(hi, b.hi);
-    double p2 = hi * b.lo + lo * b.hi;
-    ddouble s = two_sum(p1.lo, p2);
-    double rh = p1.hi + s.hi;
-    double rl = s.lo;
-    ddouble r = ddouble::from_two_doubles(rh, rl);
-    return r;
-}
-
-// ddouble division
-DD_INLINE ddouble ddouble::operator/(const ddouble &b) const {
-    // Rough idea: use double division for approximation, then refine
-    double q1 = hi / b.hi;
-    // Compute remainder: (a - q1*b)
-    ddouble prod = ddouble(q1) * b;
-    ddouble diff = (*this - prod);
-    double q2 = diff.hi / b.hi;
-    ddouble r = ddouble::from_two_doubles(q1 + q2, 0.0);
-    return r;
+std::string ddouble::strs() const{
+    std::stringstream ret;
+    // convert hi to string
+    ret << "(" << std::setprecision(16) << hi << ",";
+    // convert lo to string
+    ret << lo << ")";
+    return ret.str();
 }

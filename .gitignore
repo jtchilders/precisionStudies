@@ -6,6 +6,10 @@
 # cmake
 build
 
+# data inputs
+*_test_cases.txt
+*_test_cases.bin
+
 # Prerequisites
 *.d
 

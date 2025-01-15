@@ -1367,7 +1367,7 @@ enddo
 
 !   Restore original precision level.
 
- 130  continue
+130  continue
 return
 end subroutine ddexp
 
@@ -1864,7 +1864,6 @@ implicit none
 real (ddknd), intent(in):: a(2), b(2)
 real (ddknd), intent(out):: c(2)
 real (ddknd) t1(2), t2(2)
-
 if (a(1) <= 0.d0) then
   write (6, 1)
 1 format ('DDPOWER: A <= 0')
@@ -1872,6 +1871,7 @@ if (a(1) <= 0.d0) then
 endif
 
 call ddlog (a, t1)
+! print at each step
 call ddmul (t1, b, t2)
 call ddexp (t2, c)
 return
@@ -2405,7 +2405,6 @@ real (ddknd), intent(out):: ddc(2)
 real (ddknd) e, t1, t2
 
 !   Compute dda + ddb using Knuth's trick.
-
 t1 = dda(1) - ddb(1)
 e = t1 - dda(1)
 t2 = ((-ddb(1) - e) + (dda(1) - (t1 - e))) + dda(2) - ddb(2)

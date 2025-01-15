@@ -1,6 +1,5 @@
 import random
 import struct
-import numpy as np
 from decimal import Decimal, getcontext
 
 # Set high precision for calculations
@@ -26,80 +25,74 @@ def verify_double_double(original, hi, lo, tolerance=1e-30):
     return error < Decimal(tolerance), error
 
 
-def generate_ddadd_test_case():
+def generate_ddmuld_test_case():
     """
-    Generate a test case for ddadd using PI as the base value.
+    Generate a test case for ddmuld.
     """
-    # Generate two random scaling factors
-    scale_a = Decimal(random.uniform(0.1, 10))  # Scale factor for first number
-    scale_b = Decimal(random.uniform(0.1, 10))  # Scale factor for second number
-
-    # Derive the high-precision values from PI
-    a = PI * scale_a
-    b = PI / scale_b  # Ensure variety in operations
+    # Generate random double and double-double values
+    double_value = Decimal(random.uniform(0.1, 10))  # Random double value
+    scale = Decimal(random.uniform(0.1, 10))  # Scale factor for double-double
+    dd_value = PI * scale
 
     # Compute expected result
-    result = a + b
+    result = double_value * dd_value
 
     # Convert to double-double format
-    a_hi, a_lo = generate_double_double(a)
-    b_hi, b_lo = generate_double_double(b)
+    dd_hi, dd_lo = generate_double_double(dd_value)
     result_hi, result_lo = generate_double_double(result)
 
     # Verify correctness of double-double representation
-    valid_a, error_a = verify_double_double(a, a_hi, a_lo)
-    valid_b, error_b = verify_double_double(b, b_hi, b_lo)
+    valid_dd, error_dd = verify_double_double(dd_value, dd_hi, dd_lo)
     valid_result, error_result = verify_double_double(result, result_hi, result_lo)
 
-    if not (valid_a and valid_b and valid_result):
+    if not (valid_dd and valid_result):
         raise ValueError(
             f"Verification failed:\n"
-            f"  a: {a} (hi={a_hi}, lo={a_lo}, error={error_a})\n"
-            f"  b: {b} (hi={b_hi}, lo={b_lo}, error={error_b})\n"
+            f"  dd_value: {dd_value} (hi={dd_hi}, lo={dd_lo}, error={error_dd})\n"
             f"  result: {result} (hi={result_hi}, lo={result_lo}, error={error_result})"
         )
 
     return {
-        "dda": (a_hi, a_lo),
-        "ddb": (b_hi, b_lo),
+        "double": float(double_value),
+        "dd_value": (dd_hi, dd_lo),
         "expected": (result_hi, result_lo),
     }
 
-
 def generate_test_cases(num_cases):
-    return [generate_ddadd_test_case() for _ in range(num_cases)]
+    return [generate_ddmuld_test_case() for _ in range(num_cases)]
 
 def write_test_cases_to_text_file(filename, test_cases):
     """
-    Generate test cases for ddadd and write them to a file.
+    Generate test cases for ddmuld and write them to a file.
     Each line contains:
-      hi_a lo_a hi_b lo_b expected_hi expected_lo
+      double dd_hi dd_lo expected_hi expected_lo
     """
     with open(filename, "w") as f:
         for case in test_cases:
             f.write(
-                f"{case['dda'][0]:.16e} {case['dda'][1]:.16e} "
-                f"{case['ddb'][0]:.16e} {case['ddb'][1]:.16e} "
-                f"{case['expected'][0]:.16e} {case['expected'][1]:.16e}\n"
+                f"{case['double']} {case['dd_value'][0]} {case['dd_value'][1]} "
+                f"{case['expected'][0]} {case['expected'][1]}\n"
             )
     print(f"Test cases successfully written to {filename}")
 
-def write_test_cases_to_binary(filename, test_cases):
+def write_test_cases_to_binary(filename, num_cases=10):
     """
-    Save test cases to a binary file.
-    Each case: [hi_a, lo_a, hi_b, lo_b, expected_hi, expected_lo].
+    Save test cases for ddmuld to a binary file.
+    Each case: [double, dd_hi, dd_lo, expected_hi, expected_lo].
     """
     with open(filename, "wb") as f:
         for case in test_cases:
             f.write(struct.pack(
-                "6d",  # 6 double-precision floats
-                case["dda"][0], case["dda"][1],
-                case["ddb"][0], case["ddb"][1],
+                "5d",  # 5 double-precision floats
+                case["double"],
+                case["dd_value"][0], case["dd_value"][1],
                 case["expected"][0], case["expected"][1]
             ))
+
     print(f"Test cases successfully written to {filename}")
+
 
 if __name__ == "__main__":
     test_cases = generate_test_cases(10)
-    write_test_cases_to_text_file("ddadd_test_cases.txt", test_cases)
-    write_test_cases_to_binary("ddadd_test_cases.bin", test_cases)
+    write_test_cases_to_text_file("ddmuld_test_cases.txt", test_cases)
+    write_test_cases_to_binary("ddmuld_test_cases.bin", test_cases)
