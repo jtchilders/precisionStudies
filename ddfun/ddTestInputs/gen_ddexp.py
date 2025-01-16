@@ -54,18 +54,20 @@ def generate_ddexp_test_case():
         "expected": (result_hi, result_lo),
     }
 
-def write_test_cases_to_file(filename, num_cases=10):
+def generate_test_cases(num_cases):
+    return [generate_ddexp_test_case() for _ in range(num_cases)]
+
+def write_test_cases_to_text_file(filename, test_cases):
     """
     Generate test cases for ddexp and write them to a file.
     Each line contains:
       hi_a lo_a expected_hi expected_lo
     """
     with open(filename, "w") as f:
-        for _ in range(num_cases):
-            test_case = generate_ddexp_test_case()
+        for case in test_cases:
             f.write(
-                f"{test_case['a'][0]:.16e} {test_case['a'][1]:.16e} "
-                f"{test_case['expected'][0]:.16e} {test_case['expected'][1]:.16e}\n"
+                f"{case['a'][0]:.16e} {case['a'][1]:.16e} "
+                f"{case['expected'][0]:.16e} {case['expected'][1]:.16e}\n"
             )
     print(f"Test cases successfully written to {filename}")
 
@@ -81,15 +83,10 @@ def write_test_cases_to_binary(filename, test_cases):
                 case["a"][0], case["a"][1],
                 case["expected"][0], case["expected"][1]
             ))
-
-def generate_binary_test_file(filename, num_cases=10):
-    """
-    Generate and save test cases for ddexp to a binary file.
-    """
-    test_cases = [generate_ddexp_test_case() for _ in range(num_cases)]
-    write_test_cases_to_binary(filename, test_cases)
     print(f"Test cases successfully written to {filename}")
 
+
 if __name__ == "__main__":
-    # write_test_cases_to_file("ddexp_test_cases.txt", num_cases=10)
-    generate_binary_test_file("ddexp_test_cases.bin", num_cases=10)
+    test_cases = generate_test_cases(10)
+    write_test_cases_to_text_file("data/ddexp_test_cases.txt", test_cases)
+    write_test_cases_to_binary("data/ddexp_test_cases.bin", test_cases)

@@ -54,18 +54,20 @@ def generate_ddsqrt_test_case():
         "expected": (result_hi, result_lo),
     }
 
-def write_test_cases_to_file(filename, num_cases=10):
+
+def generate_test_cases(num_cases):
+    return [generate_ddsqrt_test_case() for _ in range(num_cases)]
+
+def write_test_cases_to_text_file(filename, test_cases):
     """
-    Generate test cases for ddsqrt and write them to a file.
-    Each line contains:
-      hi_a lo_a expected_hi expected_lo
+    Save test cases to a text file.
+    Each case: [hi_a, lo_a, expected_hi, expected_lo].
     """
     with open(filename, "w") as f:
-        for _ in range(num_cases):
-            test_case = generate_ddsqrt_test_case()
+        for case in test_cases:
             f.write(
-                f"{test_case['dda'][0]:.16e} {test_case['dda'][1]:.16e} "
-                f"{test_case['expected'][0]:.16e} {test_case['expected'][1]:.16e}\n"
+                f"{case['dda'][0]:.16e} {case['dda'][1]:.16e} "
+                f"{case['expected'][0]:.16e} {case['expected'][1]:.16e}\n"
             )
     print(f"Test cases successfully written to {filename}")
 
@@ -81,15 +83,10 @@ def write_test_cases_to_binary(filename, test_cases):
                 case["dda"][0], case["dda"][1],
                 case["expected"][0], case["expected"][1]
             ))
-
-def generate_binary_test_file(filename, num_cases=10):
-    """
-    Generate and save test cases for ddsqrt to a binary file.
-    """
-    test_cases = [generate_ddsqrt_test_case() for _ in range(num_cases)]
-    write_test_cases_to_binary(filename, test_cases)
     print(f"Test cases successfully written to {filename}")
 
+
 if __name__ == "__main__":
-    # write_test_cases_to_file("ddsqrt_test_cases.txt", num_cases=10)
-    generate_binary_test_file("ddsqrt_test_cases.bin", num_cases=10)
+    test_cases = generate_test_cases(10)
+    write_test_cases_to_text_file("data/ddsqrt_test_cases.txt", test_cases)
+    write_test_cases_to_binary("data/ddsqrt_test_cases.bin", test_cases)

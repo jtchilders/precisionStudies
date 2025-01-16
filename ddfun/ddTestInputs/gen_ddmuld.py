@@ -94,5 +94,5 @@ def write_test_cases_to_binary(filename, num_cases=10):
 
 if __name__ == "__main__":
     test_cases = generate_test_cases(10)
-    write_test_cases_to_text_file("ddmuld_test_cases.txt", test_cases)
-    write_test_cases_to_binary("ddmuld_test_cases.bin", test_cases)
+    write_test_cases_to_text_file("data/ddmuld_test_cases.txt", test_cases)
+    write_test_cases_to_binary("data/ddmuld_test_cases.bin", test_cases)
