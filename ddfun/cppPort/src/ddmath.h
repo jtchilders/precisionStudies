@@ -2,7 +2,10 @@
 #include "ddouble.h"
 
 ddouble ddabs(const ddouble& );
+ddouble ddacosh(const ddouble& );
 ddouble ddadd(const ddouble&, const ddouble& );
+ddouble ddasinh(const ddouble& );
+ddouble ddatanh(const ddouble& );
 ddouble dddiv(const ddouble&, const ddouble& );
 ddouble dddivd(const ddouble&, const double );
 ddouble ddexp(const ddouble& );

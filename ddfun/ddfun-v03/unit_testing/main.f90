@@ -1,6 +1,9 @@
 program main
    use test_ddabs
+   use test_ddacosh
    use test_ddadd
+   use test_ddasinh
+   use test_ddatanh
    use test_dddiv
    use test_dddivd
    use test_ddexp
@@ -25,7 +28,10 @@ program main
 
    ! Call unit tests with respective input files
    call unittest_ddabs(trim(input_files_path) // "/ddabs_test_cases.bin")
+   call unittest_ddacosh(trim(input_files_path) // "/ddacosh_test_cases.bin")
    call unittest_ddadd(trim(input_files_path) // "/ddadd_test_cases.bin")
+   call unittest_ddasinh(trim(input_files_path) // "/ddasinh_test_cases.bin")
+   call unittest_ddatanh(trim(input_files_path) // "/ddatanh_test_cases.bin")
    call unittest_dddiv(trim(input_files_path) // "/dddiv_test_cases.bin")
    call unittest_dddivd(trim(input_files_path) // "/dddivd_test_cases.bin")
    call unittest_ddexp(trim(input_files_path) // "/ddexp_test_cases.bin")

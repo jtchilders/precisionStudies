@@ -2,7 +2,10 @@
 # make list of test files
 set(TEST_SOURCES
    test_ddabs.f90
+   test_ddacosh.f90
    test_ddadd.f90
+   test_ddasinh.f90
+   test_ddatanh.f90
    test_dddiv.f90
    test_dddivd.f90
    test_ddexp.f90

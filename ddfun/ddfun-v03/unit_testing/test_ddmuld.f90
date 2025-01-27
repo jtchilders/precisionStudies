@@ -23,7 +23,7 @@ module test_ddmuld
  
      do
        ! Read five double-precision values (one test case)
-       read(10, iostat=ios) double_value, dd_hi, dd_lo, expected_hi, expected_lo
+       read(10, iostat=ios) dd_hi, dd_lo, double_value, expected_hi, expected_lo
        if (ios /= 0) exit  ! Exit loop at end of file
  
        total_tests = total_tests + 1

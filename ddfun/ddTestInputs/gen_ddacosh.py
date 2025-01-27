@@ -1,4 +1,4 @@
-# gen_ddmuld.py
+# gen_ddacosh.py
 import random
 import struct
 import math
@@ -43,20 +43,17 @@ def verify_double_double(original, hi, lo, tolerance):
    scale_diff = calculate_exponent_difference(original, error)
    return scale_diff > tolerance, error
 
-def generate_ddmuld_test_case():
+def generate_ddacosh_test_case():
    """
-   Generate a test case for ddmuld.
+   Generate a test case for ddacosh ensuring a > 1.
    """
-   # Generate a random double-double number
-   a = mp.rand()
+   # Generate a random number greater than or equal to 1
+   a = mp.rand() + 1.0
 
-   # Generate a random single double precision number (db)
-   db = random.random()
+   # Compute expected result using inverse hyperbolic cosine
+   result = mp.acosh(a)
 
-   # Compute expected result
-   result = a * mp.mpf(db)
-
-   # Convert to inputs and outputs to double-double format
+   # Convert inputs and outputs to double-double format
    a_hi, a_lo = generate_double_double(a)
    result_hi, result_lo = generate_double_double(result)
 
@@ -67,32 +64,29 @@ def generate_ddmuld_test_case():
 
    if not (valid_a and valid_result):
       print(
-         f"Verification of ddmuld failed for tolerance {tolerance}:\n"
+         f"Verification of ddacosh failed for tolerance {tolerance}:\n"
          f"  a: {a} (hi={a_hi}, lo={a_lo}, error={error_a})\n"
-         f"  db: {db}\n"
          f"  result: {result} (hi={result_hi}, lo={result_lo}, error={error_result})"
       )
 
    return {
-      "dda": (a_hi, a_lo),
-      "db": db,
+      "a": (a_hi, a_lo),
       "expected": (result_hi, result_lo),
    }
 
 def generate_test_cases(num_cases):
-   return [generate_ddmuld_test_case() for _ in range(num_cases)]
+   return [generate_ddacosh_test_case() for _ in range(num_cases)]
 
 def write_test_cases_to_text_file(filename, test_cases):
    """
-   Generate test cases for ddmuld and write them to a file.
+   Generate test cases for ddacosh and write them to a file.
    Each line contains:
-   hi_a lo_a db expected_hi expected_lo
+   hi_a lo_a expected_hi expected_lo
    """
    with open(filename, "w") as f:
       for case in test_cases:
          f.write(
-               f"{case['dda'][0]:.16e} {case['dda'][1]:.16e} "
-               f"{case['db']:.16e} "
+               f"{case['a'][0]:.16e} {case['a'][1]:.16e} "
                f"{case['expected'][0]:.16e} {case['expected'][1]:.16e}\n"
          )
    print(f"Test cases successfully written to {filename}")
@@ -100,20 +94,19 @@ def write_test_cases_to_text_file(filename, test_cases):
 def write_test_cases_to_binary(filename, test_cases):
    """
    Save test cases to a binary file.
-   Each case: [hi_a, lo_a, db, expected_hi, expected_lo].
+   Each case: [hi_a, lo_a, expected_hi, expected_lo].
    """
    with open(filename, "wb") as f:
       for case in test_cases:
          f.write(struct.pack(
-            "5d",  # 5 double-precision floats
-            case["dda"][0], case["dda"][1],
-            case["db"],
-            case["expected"][0], case["expected"][1]
+               "4d",  # 4 double-precision floats
+               case["a"][0], case["a"][1],
+               case["expected"][0], case["expected"][1]
          ))
    print(f"Test cases successfully written to {filename}")
 
 if __name__ == "__main__":
-   print("Generating test cases for ddmuld...")
+   print("Generating test cases for ddacosh...")
    test_cases = generate_test_cases(10)
-   write_test_cases_to_text_file("data/ddmuld_test_cases.txt", test_cases)
-   write_test_cases_to_binary("data/ddmuld_test_cases.bin", test_cases)
+   write_test_cases_to_text_file("data/ddacosh_test_cases.txt", test_cases)
+   write_test_cases_to_binary("data/ddacosh_test_cases.bin", test_cases)

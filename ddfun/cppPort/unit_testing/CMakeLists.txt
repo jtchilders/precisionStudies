@@ -1,6 +1,9 @@
 set(CPP_UNIT_TEST_DEPS
    test_ddabs.h
+   test_ddacosh.h
    test_ddadd.h
+   test_ddasinh.h
+   test_ddatanh.h
    test_dddiv.h
    test_dddivd.h
    test_ddexp.h

@@ -15,6 +15,24 @@ ddouble ddabs(const ddouble& a) {
     return b;
 }
 
+ddouble ddacosh(const ddouble& a) {
+  if (a.hi < 1.0) {
+    std::cerr << "DDACOSH: Argument is < 1." << std::endl;
+    std::abort();
+  }
+
+  ddouble f1{1.0, 0.0};
+  ddouble t1, t2, b;
+
+  t1 = ddmul(a, a);
+  t2 = ddsub(t1, f1);
+  t1 = ddsqrt(t2);
+  t2 = ddadd(a, t1);
+  b = ddlog(t2);
+
+  return b;
+}
+
 ddouble ddadd(const ddouble& dda, const ddouble& ddb) {
     ddouble ddc;
     double e, t1, t2;
@@ -28,6 +46,36 @@ ddouble ddadd(const ddouble& dda, const ddouble& ddb) {
     ddc.hi = t1 + t2;
     ddc.lo = t2 - (ddc.hi - t1);
     return ddc;
+}
+
+ddouble ddasinh(const ddouble& a) {
+    ddouble f1, t1, t2, b;
+    f1.hi = 1.0; f1.lo = 0.0;
+    
+    t1 = ddmul(a, a);
+    t2 = ddadd(t1, f1);
+    t1 = ddsqrt(t2);
+    t2 = ddadd(a, t1);
+    b = ddlog(t2);
+    
+    return b;
+}
+
+ddouble ddatanh(const ddouble& a) {
+    // Check if a <= -1 or a >= 1; error.
+    if (std::abs(a.hi) >= 1.0) {
+        std::cerr << "DDATANH: Argument is <= -1 or >= 1." << std::endl;
+        std::abort();
+    }
+
+    ddouble f1 = {1.0, 0.0};
+    ddouble t1, t2, t3;
+
+    t1 = ddadd(f1, a);
+    t2 = ddsub(f1, a);
+    t3 = dddiv(t1, t2);
+    t1 = ddlog(t3);
+    return ddmuld(t1, 0.5);
 }
 
 ddouble dddiv(const ddouble& dda, const ddouble& ddb) {

@@ -1,8 +1,9 @@
-# gen_ddlog.py
+# gen_ddatanh.py
 import random
 import struct
 import math
-from mpmath import mp, log
+from mpmath import mp
+
 
 # Set high precision for calculations
 mp.dps = 50
@@ -14,6 +15,7 @@ def generate_double_double(base_value):
     hi = float(base_value)
     lo = float(base_value - mp.mpf(hi))  # Compute the remainder
     return hi, lo
+
 
 def calculate_exponent_difference(a, b):
     """
@@ -43,15 +45,15 @@ def verify_double_double(original, hi, lo, tolerance):
     scale_diff = calculate_exponent_difference(original, error)
     return scale_diff > tolerance, error
 
-def generate_ddlog_test_case():
+def generate_ddatanh_test_case():
     """
-    Generate a test case for ddlog using a positive random value.
+    Generate a test case for ddatanh.
     """
-    # Ensure the number is positive and non-zero for log
-    a = mp.rand() + 1  # Shift range to (1, 2) to avoid undefined log(0) or negative
+    # Generate a random scaling factor [-0.99, 0.99) in high precision
+    a = mp.rand() * 1.98 - 0.99
 
-    # Compute expected result using high precision
-    result = log(a)
+    # Compute expected result
+    result = mp.atanh(a)
 
     # Convert to inputs and outputs to double-double format
     a_hi, a_lo = generate_double_double(a)
@@ -64,7 +66,7 @@ def generate_ddlog_test_case():
 
     if not (valid_a and valid_result):
         print(
-            f"Verification of ddlog failed for tolerance {tolerance}:\n"
+            f"Verification of ddatanh failed for tolerance {tolerance}:\n"
             f"  a: {a} (hi={a_hi}, lo={a_lo}, error={error_a})\n"
             f"  result: {result} (hi={result_hi}, lo={result_lo}, error={error_result})"
         )
@@ -74,12 +76,13 @@ def generate_ddlog_test_case():
         "expected": (result_hi, result_lo),
     }
 
+
 def generate_test_cases(num_cases):
-    return [generate_ddlog_test_case() for _ in range(num_cases)]
+    return [generate_ddatanh_test_case() for _ in range(num_cases)]
 
 def write_test_cases_to_text_file(filename, test_cases):
     """
-    Generate test cases for ddlog and write them to a file.
+    Generate test cases for ddatanh and write them to a file.
     Each line contains:
     hi_a lo_a expected_hi expected_lo
     """
@@ -106,7 +109,7 @@ def write_test_cases_to_binary(filename, test_cases):
     print(f"Test cases successfully written to {filename}")
 
 if __name__ == "__main__":
-    print("Generating test cases for ddlog...")
+    print("Generating test cases for ddatanh...")
     test_cases = generate_test_cases(10)
-    write_test_cases_to_text_file("data/ddlog_test_cases.txt", test_cases)
-    write_test_cases_to_binary("data/ddlog_test_cases.bin", test_cases)
+    write_test_cases_to_text_file("data/ddatanh_test_cases.txt", test_cases)
+    write_test_cases_to_binary("data/ddatanh_test_cases.bin", test_cases)

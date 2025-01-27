@@ -1,6 +1,9 @@
 #include <string>
 #include "test_ddabs.h"
+#include "test_ddacosh.h"
 #include "test_ddadd.h"
+#include "test_ddasinh.h"
+#include "test_ddatanh.h"
 #include "test_dddiv.h"
 #include "test_dddivd.h"
 #include "test_ddexp.h"
@@ -21,7 +24,10 @@ int main(int argc, char* argv[]) {
    std::string path = std::string(argv[1]);
 
    unittest_ddabs(path + "/ddabs_test_cases.bin");
+   unittest_ddacosh(path + "/ddacosh_test_cases.bin");
    unittest_ddadd(path + "/ddadd_test_cases.bin");
+   unittest_ddasinh(path + "/ddasinh_test_cases.bin");
+   unittest_ddatanh(path + "/ddatanh_test_cases.bin");
    unittest_dddiv(path + "/dddiv_test_cases.bin");
    unittest_dddivd(path + "/dddivd_test_cases.bin");
    unittest_ddexp(path + "/ddexp_test_cases.bin");
