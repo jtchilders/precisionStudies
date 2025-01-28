@@ -382,6 +382,7 @@ ddouble ddnint(const ddouble& a) {
     return b;
 }
 
+
 ddouble ddnpwr(const ddouble& a, int n) {
     const double cl2 = 1.4426950408889633;
     ddouble s0, s1, s2 = {1.0, 0.0};
@@ -444,6 +445,48 @@ ddouble ddnpwr(const ddouble& a, int n) {
     return s2;
 }
 
+
+ddouble ddpolyr(const int n, const std::vector<ddouble>& a, const ddouble& x0) {
+    const double eps = 1.0e-29;
+    std::vector<ddouble> ad(n+1);
+    ddouble x = x0;
+    double dt1;
+    
+    for (int i = 0; i < n; ++i) {
+        dt1 = static_cast<double>(i + 1);
+        ad[i] = ddmuld(a[i+1], dt1);
+    }
+    ad[n].hi = 0.0;
+    ad[n].lo = 0.0;
+    
+    for (int it = 0; it < 20; ++it) {
+        ddouble t1 = {0.0, 0.0};
+        ddouble t2 = {0.0, 0.0};
+        ddouble t3 = {1.0, 0.0};
+        ddouble t4, t5;
+        
+        for (int i = 0; i <= n; ++i) {
+            t4 = ddmul(a[i], t3);
+            t5 = ddadd(t1, t4);
+            t1 = t5;
+            t4 = ddmul(ad[i], t3);
+            t5 = ddadd(t2, t4);
+            t2 = t5;
+            t4 = ddmul(t3, x);
+            t3 = t4;
+        }
+        
+        t3 = dddiv(t1, t2);
+        t4 = ddsub(x, t3);
+        x = t4;
+        if (std::abs(t3.hi) <= eps) {
+            return x;
+        }
+    }
+    
+    std::cerr << "DDROOT: failed to converge." << std::endl;
+    return ddouble();
+}
 
 ddouble ddpower(const ddouble& a, const ddouble& b) {
     if (a.hi <= 0.0) {

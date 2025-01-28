@@ -1,5 +1,6 @@
 #pragma once
 #include "ddouble.h"
+#include <vector>
 
 ddouble ddabs(const ddouble& );
 ddouble ddacosh(const ddouble& );
@@ -16,6 +17,7 @@ ddouble ddmuldd(const double, const double);
 ddouble ddneg(const ddouble& );
 ddouble ddnint(const ddouble& );
 ddouble ddnpwr(const ddouble&, int );
+ddouble ddpolyr(const int, const std::vector<ddouble>&, const ddouble& );
 ddouble ddpower(const ddouble& , const ddouble& );
 ddouble ddsqrt(const ddouble& );
 ddouble ddsub(const ddouble&, const ddouble& );

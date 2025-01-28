@@ -13,6 +13,7 @@ set(CPP_UNIT_TEST_DEPS
    test_ddmuldd.h
    test_ddneg.h
    test_ddnpwr.h
+   test_ddpolyr.h
    test_ddpower.h
    test_ddsqrt.h
    test_ddsub.h

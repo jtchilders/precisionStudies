@@ -13,6 +13,7 @@ program main
    use test_ddmuldd
    use test_ddneg
    use test_ddnpwr
+   use test_ddpolyr
    use test_ddpower
    use test_ddsqrt
    use test_ddsub
@@ -41,6 +42,7 @@ program main
    call unittest_ddmuldd(trim(input_files_path) // "/ddmuldd_test_cases.bin")
    call unittest_ddneg(trim(input_files_path) // "/ddneg_test_cases.bin")
    call unittest_ddnpwr(trim(input_files_path) // "/ddnpwr_test_cases.bin")
+   call unittest_ddpolyr(trim(input_files_path) // "/ddpolyr_test_cases.bin")
    call unittest_ddpower(trim(input_files_path) // "/ddpower_test_cases.bin")
    call unittest_ddsqrt(trim(input_files_path) // "/ddsqrt_test_cases.bin")
    call unittest_ddsub(trim(input_files_path) // "/ddsub_test_cases.bin")

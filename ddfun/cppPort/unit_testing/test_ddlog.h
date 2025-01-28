@@ -31,7 +31,7 @@ void unittest_ddlog(const std::string &filename) {
       // Perform ddlog operation
       ddouble a{hi_a, lo_a};
       ddouble expected{expected_hi, expected_lo};
-      ddouble result = ddlog(a);
+      ddouble result = a.log();
 
       // Compare results
       bool test_passed = (std::abs(result.hi - expected.hi) < tolerance) &&

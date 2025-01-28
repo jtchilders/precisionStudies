@@ -1,5 +1,9 @@
 {
    "C_Cpp.default.includePath": [
+      "${workspaceFolder}/cppPort/src",
+      "${workspaceFolder}/cppPort/unit_testing",
+      "${workspaceFolder}/ddfun-v03/fortran",
+      "${workspaceFolder}/ddfun-v03/unit_testing",
    ],
    "C_Cpp.default.systemIncludePath": [
       "/soft/compilers/cuda/cuda-12.3.0/include",
@@ -77,8 +81,10 @@
       "streambuf": "cpp",
       "thread": "cpp",
       "filesystem": "cpp",
-      "cassert": "cpp"
+      "cassert": "cpp",
+      "__locale": "cpp",
+      "ios": "cpp"
    },
-   "cmake.sourceDirectory": "/home/jchilders/git/precisionStudies/ddfun/cudaPort",
+   "cmake.sourceDirectory": "/home/jchilders/git/precisionStudies/ddfun",
    "fortran.fortls.disabled": true
 }

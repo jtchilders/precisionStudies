@@ -3,6 +3,7 @@
 set(CPP_SRC 
    ddmath.cpp
    ddmath.h
+   ddouble.cpp
    ddouble.h)
 
 add_library(ddmath STATIC ${CPP_SRC})

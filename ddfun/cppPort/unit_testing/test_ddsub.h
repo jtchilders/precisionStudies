@@ -33,7 +33,7 @@ void unittest_ddsub(const std::string &filename) {
       // Perform ddsub operation
       ddouble a{hi_a, lo_a}, b{hi_b, lo_b};
       ddouble expected{expected_hi, expected_lo};
-      ddouble result = ddsub(a, b);
+      ddouble result = a - b;
 
       // Compare results
       bool test_passed = (std::abs(result.hi - expected.hi) < tolerance) &&

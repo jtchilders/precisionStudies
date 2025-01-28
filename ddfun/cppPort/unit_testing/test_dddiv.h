@@ -33,7 +33,7 @@ void unittest_dddiv(const std::string &filename) {
       // Perform dddiv operation
       ddouble a{hi_a, lo_a}, b{hi_b, lo_b};
       ddouble expected{expected_hi, expected_lo};
-      ddouble result = dddiv(a, b);
+      ddouble result = a / b;
 
       // Compare results
       bool test_passed = (std::abs(result.hi - expected.hi) < tolerance) &&

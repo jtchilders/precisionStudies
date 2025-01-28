@@ -2330,7 +2330,7 @@ enddo
 
 write (ddldb, 1)
 1 format ('DDROOT: failed to converge.')
-call ddabrt
+
 
 110 continue
 

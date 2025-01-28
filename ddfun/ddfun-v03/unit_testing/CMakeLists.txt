@@ -15,6 +15,7 @@ set(TEST_SOURCES
    test_ddmuldd.f90
    test_ddneg.f90
    test_ddnpwr.f90
+   test_ddpolyr.f90
    test_ddpower.f90
    test_ddsqrt.f90
    test_ddsub.f90

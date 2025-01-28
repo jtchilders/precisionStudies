@@ -13,6 +13,7 @@
 #include "test_ddmuldd.h"
 #include "test_ddneg.h"
 #include "test_ddnpwr.h"
+#include "test_ddpolyr.h"
 #include "test_ddpower.h"
 #include "test_ddsqrt.h"
 #include "test_ddsub.h"
@@ -37,6 +38,7 @@ int main(int argc, char* argv[]) {
    unittest_ddmuldd(path + "/ddmuldd_test_cases.bin");
    unittest_ddneg(path + "/ddneg_test_cases.bin");
    unittest_ddnpwr(path + "/ddnpwr_test_cases.bin");
+   unittest_ddpolyr(path + "/ddpolyr_test_cases.bin");
    unittest_ddpower(path + "/ddpower_test_cases.bin");
    unittest_ddsqrt(path + "/ddsqrt_test_cases.bin");
    unittest_ddsub(path + "/ddsub_test_cases.bin");

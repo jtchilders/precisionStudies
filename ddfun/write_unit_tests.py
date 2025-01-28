@@ -14,24 +14,25 @@ client = OpenAI()
 
 # list of functions to extract from the fortran file
 functions_to_extract = [
-   "ddabs",
-   "ddacosh",
+   # "ddabs",
+   # "ddacosh",
    # "ddadd",
-   "ddasinh",
-   "ddatanh",
-   "dddiv",
-   "dddivd",
-   "ddexp",
-   "ddlog",
-   "ddmul",
-   "ddmuld",
-   "ddmuldd",
-   "ddneg",
-   "ddnint",
-   "ddnpwr",
-   "ddpower",
-   "ddsqrt",
-   "ddsub",
+   # "ddasinh",
+   # "ddatanh",
+   # "dddiv",
+   # "dddivd",
+   # "ddexp",
+   # "ddlog",
+   # "ddmul",
+   # "ddmuld",
+   # "ddmuldd",
+   # "ddneg",
+   # "ddnint",
+   # "ddnpwr",
+   "ddpolyr"
+   # "ddpower",
+   # "ddsqrt",
+   # "ddsub",
 ]
 
 py_gen_ddadd_inputs = """# gen_ddadd.py
@@ -369,6 +370,7 @@ def generate_cpp_func(function, outfilename):
 Generate a corresponding C++ function that performs the same operation as the Fortran function.
 Assume that a ddouble struct containing a double hi and a double lo have already been defined.
 The function should return a ddouble struct containing the result of the operation.
+Cases where the Fortran calls the ddabrt due to errors, the C++ function should print an error and return an empty ddouble struct.
 The function should be named {function['name']} and can return a ddouble struct containing the result of the operation.
 
 Please only reply with the function code using no formatting because your reply will go directly into a file to be compiled. Do not even include the markdown 
@@ -633,25 +635,25 @@ if __name__ == "__main__":
    # loop over each function and generate C++ code
    for func in functions:
       if func["name"] in functions_to_extract:
-
+         
          # generate C++ code using GPT
-         # print(f"Generating C++ code for {func['name']}")
-         # cpp_func = generate_cpp_func(func,f"cppPort/{func['name']}.h")
+         print(f"Generating C++ code for {func['name']}")
+         cpp_func = generate_cpp_func(func,f"cppPort/{func['name']}.h")
 
          # generate python code using GPT
          print(f"Generating python generator for {func['name']}")
          gen_python_generator_with_gpt(func,f"ddTestInputs/gen_{func['name']}.py")
 
          # generate fortran unit test using GPT
-         # print(f"Generating fortran unit test for {func['name']}")
-         # generate_fortran_unittest(func,f"ddfun-v03/unit_testing/test_{func['name']}.f90")
+         print(f"Generating fortran unit test for {func['name']}")
+         generate_fortran_unittest(func,f"ddfun-v03/unit_testing/test_{func['name']}.f90")
 
          # generate C++ unit test using GPT
-         # print(f"Generating C++ unit test for {func['name']}")
-         # generate_cpp_unittest(func,cpp_func,f"cppPort/unit_testing/test_{func['name']}.h")
+         print(f"Generating C++ unit test for {func['name']}")
+         generate_cpp_unittest(func,cpp_func,f"cppPort/unit_testing/test_{func['name']}.h")
 
    # print("Updating support files")
-   # update_support_files()
+   update_support_files()
         
 
         
