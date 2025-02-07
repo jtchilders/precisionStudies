@@ -9,6 +9,7 @@ set(CPP_UNIT_TEST_DEPS
    test_ddcmul.h
    test_ddcpwr.h
    test_ddcsqrt.h
+   test_ddcsshr.h
    test_ddcssnr.h
    test_ddcsub.h
    test_dddiv.h

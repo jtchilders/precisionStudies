@@ -103,6 +103,160 @@ ddouble ddatanh(const ddouble& a) {
     return ddmuld(t1, 0.5);
 }
 
+ddcomplex ddcsqrt(const ddcomplex& a) {
+    /*
+!   This routine computes the complex square root of the DDC number C.
+!   This routine uses the following formula, where A1 and A2 are the real and
+!   imaginary parts of A, and where R = Sqrt [A1 ^ 2 + A2 ^2]:
+
+!      B = Sqrt [(R + A1) / 2] + I Sqrt [(R - A1) / 2]
+
+!   If the imaginary part of A is < 0, then the imaginary part of B is also
+!   set to be < 0.
+    */
+
+    ddouble s0,s1,s2;
+    ddcomplex b;
+
+    if (a.real.hi == 0.0 && a.imag.hi == 0.0)
+        return ddcomplex();
+
+    s0 = a.real * a.real;
+    s1 = a.imag * a.imag;
+    s2 = s0 + s1;
+    s0 = ddsqrt(s2);
+
+    s1 = a.real;
+    if (s1.hi < 0.0)
+        s1 = -s1;
+    s2 = s0 + s1;
+    s1 = ddmuld(s2, 0.5);
+    s0 = ddsqrt(s1);
+    s1 = ddmuld(s0, 2.0);
+    if (a.real.hi >= 0.0){
+        b.real = s0;
+        b.imag = a.imag / s1;
+    } else {
+        b.real = a.imag / s1;
+        if ( b.real.hi < 0.0)
+            b.real = - b.real;
+        b.imag = s0;
+        if (a.imag.hi < 0.0)
+            b.imag = -b.imag;
+    }
+
+    return b;
+}
+
+void ddcsshr(const ddouble& a, ddouble& x, ddouble& y) {
+    /*
+!   This computes the hyperbolic cosine and sine of the DDR number A and
+!   returns the two DDR results in X and Y, respectively. 
+*/
+    ddouble f = {1.0, 0.0};
+    ddouble s0, s1, s2;
+
+    s0 = ddexp(a);
+    s1 = f / s0;
+    s2 = s0 + s1;
+    x = ddmuld(s2, 0.5);
+    s2 = s0 - s1;
+    y = ddmuld(s2, 0.5);
+}
+
+
+void ddcssnr(const ddouble &a, ddouble &x, ddouble &y) {
+    /*
+
+!   This computes the cosine and sine of the DDR number A and returns the
+!   two DDR results in X and Y, respectively.
+
+!   This routine uses the conventional Taylor series for Sin (s):
+
+!   Sin (s) =  s - s^3 / 3! + s^5 / 5! - s^7 / 7! ...
+
+!   where the argument S has been reduced to (-pi, pi). To further accelerate
+!   convergence of the series, the reduced argument is divided by 2^NQ. After
+!   convergence, the double-angle formulas for cos are applied NQ times.
+*/
+    const int itrmx = 1000, nq = 5;
+    const double eps = 1.0e-32;
+    const ddouble pi = {3.1415926535897931, 1.2246467991473532e-16};
+    
+    int na = 2;
+    if (a.hi == 0.0) na = 0;
+    if (na == 0) {
+        x.hi = 1.0;
+        x.lo = 0.0;
+        y.hi = 0.0;
+        y.lo = 0.0;
+        return;
+    }
+    
+    ddouble f1 = {1.0, 0.0}, f2 = {0.5, 0.0};
+    
+    if (a.hi >= 1.0e60) {
+        std::cerr << "*** DDCSSNR: argument is too large to compute cos or sin." << std::endl;
+        return;
+    }
+    
+    ddouble s0 = ddmuld(pi, 2.0);
+    ddouble s1 = dddiv(a, s0);
+    ddouble s2 = ddnint(s1);
+    ddouble s3 = ddsub(a, ddmul(s0, s2));
+    
+    if (s3.hi == 0.0) {
+        x.hi = 1.0;
+        x.lo = 0.0;
+        y.hi = 0.0;
+        y.lo = 0.0;
+        return;
+    }
+    
+    s0 = dddivd(s3, std::pow(2.0, nq));
+    s1 = s0;
+    
+    ddouble s2_squared = ddmul(s0, s0);
+    int is = (s0.hi < 0.0) ? -1 : 1;
+    
+    for (int i1 = 1; i1 <= itrmx; ++i1) {
+        double t2 = -(2.0 * i1) * (2.0 * i1 + 1.0);
+        ddouble s3 = ddmul(s2_squared, s1);
+        s1 = dddivd(s3, t2);
+        s3 = ddadd(s1, s0);
+        s0 = s3;
+        if (std::abs(s1.hi) < eps) break;
+        if (i1 == itrmx) {
+            std::cerr << "*** DDCSSNR: Iteration limit exceeded." << std::endl;
+            return;
+        }
+    }
+    
+    ddouble s4 = ddmul(s0, s0);
+    ddouble s5 = ddsub(f2, s4);
+    s0 = ddmuld(s5, 2.0);
+    
+    for (int j = 2; j <= nq; ++j) {
+        s4 = ddmul(s0, s0);
+        s5 = ddsub(s4, f2);
+        s0 = ddmuld(s5, 2.0);
+    }
+    
+    s4 = ddmul(s0, s0);
+    s5 = ddsub(f1, s4);
+    s1 = ddsqrt(s5);
+    
+    if (is < 1) {
+        s1.hi = -s1.hi;
+        s1.lo = -s1.lo;
+    }
+    
+    x = s0;
+    y = s1;
+    
+}
+
+
 ddouble dddiv(const ddouble& dda, const ddouble& ddb) {
     const double split = 134217729.0;
     
@@ -690,97 +844,6 @@ ddcomplex ddsqrt(const ddcomplex& a) {
     }
 
     return b;
-}
-
-void ddcssnr(const ddouble &a, ddouble &x, ddouble &y) {
-    /*
-
-!   This computes the cosine and sine of the DDR number A and returns the
-!   two DDR results in X and Y, respectively.
-
-!   This routine uses the conventional Taylor series for Sin (s):
-
-!   Sin (s) =  s - s^3 / 3! + s^5 / 5! - s^7 / 7! ...
-
-!   where the argument S has been reduced to (-pi, pi). To further accelerate
-!   convergence of the series, the reduced argument is divided by 2^NQ. After
-!   convergence, the double-angle formulas for cos are applied NQ times.
-*/
-    const int itrmx = 1000, nq = 5;
-    const double eps = 1.0e-32;
-    const ddouble pi = {3.1415926535897931, 1.2246467991473532e-16};
-    
-    int na = 2;
-    if (a.hi == 0.0) na = 0;
-    if (na == 0) {
-        x.hi = 1.0;
-        x.lo = 0.0;
-        y.hi = 0.0;
-        y.lo = 0.0;
-        return;
-    }
-    
-    ddouble f1 = {1.0, 0.0}, f2 = {0.5, 0.0};
-    
-    if (a.hi >= 1.0e60) {
-        std::cerr << "*** DDCSSNR: argument is too large to compute cos or sin." << std::endl;
-        return;
-    }
-    
-    ddouble s0 = ddmuld(pi, 2.0);
-    ddouble s1 = dddiv(a, s0);
-    ddouble s2 = ddnint(s1);
-    ddouble s3 = ddsub(a, ddmul(s0, s2));
-    
-    if (s3.hi == 0.0) {
-        x.hi = 1.0;
-        x.lo = 0.0;
-        y.hi = 0.0;
-        y.lo = 0.0;
-        return;
-    }
-    
-    s0 = dddivd(s3, std::pow(2.0, nq));
-    s1 = s0;
-    
-    ddouble s2_squared = ddmul(s0, s0);
-    int is = (s0.hi < 0.0) ? -1 : 1;
-    
-    for (int i1 = 1; i1 <= itrmx; ++i1) {
-        double t2 = -(2.0 * i1) * (2.0 * i1 + 1.0);
-        ddouble s3 = ddmul(s2_squared, s1);
-        s1 = dddivd(s3, t2);
-        s3 = ddadd(s1, s0);
-        s0 = s3;
-        if (std::abs(s1.hi) < eps) break;
-        if (i1 == itrmx) {
-            std::cerr << "*** DDCSSNR: Iteration limit exceeded." << std::endl;
-            return;
-        }
-    }
-    
-    ddouble s4 = ddmul(s0, s0);
-    ddouble s5 = ddsub(f2, s4);
-    s0 = ddmuld(s5, 2.0);
-    
-    for (int j = 2; j <= nq; ++j) {
-        s4 = ddmul(s0, s0);
-        s5 = ddsub(s4, f2);
-        s0 = ddmuld(s5, 2.0);
-    }
-    
-    s4 = ddmul(s0, s0);
-    s5 = ddsub(f1, s4);
-    s1 = ddsqrt(s5);
-    
-    if (is < 1) {
-        s1.hi = -s1.hi;
-        s1.lo = -s1.lo;
-    }
-    
-    x = s0;
-    y = s1;
-    
 }
 
 

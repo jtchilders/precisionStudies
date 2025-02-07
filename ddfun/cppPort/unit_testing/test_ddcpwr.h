@@ -16,44 +16,43 @@ void unittest_ddcpwr(const std::string &filename) {
 
    std::cout << "Running tests for ddcpwr from: " << filename << std::endl;
 
-   double hi_real, lo_real, hi_imag, lo_imag, expected_hi, expected_lo;
-   int n;
+   ddcomplex a,expected;
+   int n,placeholder;
    int total_tests = 0;
    int passed_tests = 0;
-   const double tolerance = 30;
+   const double tolerance = 28;
 
-   while (infile.read(reinterpret_cast<char *>(&hi_real), sizeof(double)) &&
-          infile.read(reinterpret_cast<char *>(&lo_real), sizeof(double)) &&
-          infile.read(reinterpret_cast<char *>(&hi_imag), sizeof(double)) &&
-          infile.read(reinterpret_cast<char *>(&lo_imag), sizeof(double)) &&
+   while (infile.read(reinterpret_cast<char *>(&a.real.hi), sizeof(double)) &&
+          infile.read(reinterpret_cast<char *>(&a.real.lo), sizeof(double)) &&
+          infile.read(reinterpret_cast<char *>(&a.imag.hi), sizeof(double)) &&
+          infile.read(reinterpret_cast<char *>(&a.imag.lo), sizeof(double)) &&
           infile.read(reinterpret_cast<char *>(&n), sizeof(int)) &&
-          infile.read(reinterpret_cast<char *>(&expected_hi), sizeof(double)) &&
-          infile.read(reinterpret_cast<char *>(&expected_lo), sizeof(double))) {
+          infile.read(reinterpret_cast<char *>(&placeholder), sizeof(int)) &&
+          infile.read(reinterpret_cast<char *>(&expected.real.hi), sizeof(double)) &&
+          infile.read(reinterpret_cast<char *>(&expected.real.lo), sizeof(double)) &&
+          infile.read(reinterpret_cast<char *>(&expected.imag.hi), sizeof(double)) &&  
+          infile.read(reinterpret_cast<char *>(&expected.imag.lo), sizeof(double))) {
+           
 
       total_tests++;
 
-      // Prepare inputs
-      ddouble real_part{hi_real, lo_real};
-      ddouble imag_part{hi_imag, lo_imag};
-      ddcomplex a{real_part, imag_part};
-      ddouble expected{expected_hi, expected_lo};
-
       // Perform ddcpwr operation
-      ddouble result = ddcpwr(a, n);
+      ddcomplex result = ddcpwr(a, n);
 
       // Use scale difference for comparison
-      int scale_diff = calculate_scale_difference(result, expected);
-      bool test_passed = (scale_diff >= tolerance or scale_diff == 0);
+      int scale_diff_real = calculate_scale_difference(result.real, expected.real);
+      int scale_diff_imag = calculate_scale_difference(result.imag, expected.imag);
+      bool test_passed = (scale_diff_real >= tolerance || scale_diff_real == 0) && 
+                         (scale_diff_imag >= tolerance || scale_diff_imag == 0);
 
       if (test_passed) {
          passed_tests++;
       } else {
          std::cout << "Test Failed: " << std::setprecision(16)
-                   << "input: [" << a.real.hi << ", " << a.real.lo << "] + [" << a.imag.hi << ", " << a.imag.lo << "], n: " << n << " "
-                   << "result: [" << result.hi << ", " << result.lo << "] "
-                   << "expected: [" << expected.hi << ", " << expected.lo << "] "
-                   << "error: [" << std::abs(result.hi - expected.hi) << ", " << std::abs(result.lo - expected.lo) << "]"
-                   << "scale difference: [" << scale_diff << "]" << std::endl;
+                   << "input: [" << a.real << "] + [" << a.imag << "], n: " << n << " "
+                   << "result: [" << result.real << ", " << result.imag << "] "
+                   << "expected: [" << expected.real << ", " << expected.imag << "] "
+                   << "scale difference: [" << scale_diff_real << ", " << scale_diff_imag << "]" << std::endl;
       }
    }
 

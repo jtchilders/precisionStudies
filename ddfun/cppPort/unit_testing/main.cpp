@@ -9,6 +9,7 @@
 #include "test_ddcmul.h"
 #include "test_ddcpwr.h"
 #include "test_ddcsqrt.h"
+#include "test_ddcsshr.h"
 #include "test_ddcssnr.h"
 #include "test_ddcsub.h"
 #include "test_dddiv.h"
@@ -41,6 +42,7 @@ int main(int argc, char* argv[]) {
    unittest_ddcmul(path + "/ddcmul_test_cases.bin");
    unittest_ddcpwr(path + "/ddcpwr_test_cases.bin");
    unittest_ddcsqrt(path + "/ddcsqrt_test_cases.bin");
+   unittest_ddcsshr(path + "/ddcsshr_test_cases.bin");
    unittest_ddcssnr(path + "/ddcssnr_test_cases.bin");
    unittest_ddcsub(path + "/ddcsub_test_cases.bin");
    unittest_dddiv(path + "/dddiv_test_cases.bin");

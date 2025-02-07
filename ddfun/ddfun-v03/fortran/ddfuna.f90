@@ -491,10 +491,10 @@ endif
 
 nn = abs (n)
 if (nn == 0) then
-  s2(1) = 1.d0
-  s2(2) = 0.d0
-  s2(3) = 0.d0
-  s2(4) = 0.d0
+  b(1) = 1.d0
+  b(2) = 0.d0
+  b(3) = 0.d0
+  b(4) = 0.d0
   goto 120
 elseif (nn == 1) then
   s2(1) = a(1)

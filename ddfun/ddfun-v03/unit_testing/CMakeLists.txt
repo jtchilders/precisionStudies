@@ -11,6 +11,7 @@ set(TEST_SOURCES
    test_ddcmul.f90
    test_ddcpwr.f90
    test_ddcsqrt.f90
+   test_ddcsshr.f90
    test_ddcssnr.f90
    test_ddcsub.f90
    test_dddiv.f90

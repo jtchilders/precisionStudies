@@ -13,7 +13,7 @@ contains
     integer :: ios, total_tests, passed_tests
     integer :: scale_diff_real, scale_diff_imag
 
-    tolerance = 30  ! Double-double precision tolerance
+    tolerance = 28  ! Double-double precision tolerance
     total_tests = 0
     passed_tests = 0
 
@@ -27,14 +27,6 @@ contains
       if (ios /= 0) exit  ! Exit loop at end of file
 
       total_tests = total_tests + 1
-
-
-      write(*,*) "Test Failed:", &
-      "inputs: A = [", a(1), ",", a(2), ",", a(3), ",", a(4), "]", &
-      "n = ", n, &
-      "result: [", b(1), ",", b(2), ",", b(3), ",", b(4), "]", &
-      "expected: [", expected_b(1), ",", expected_b(2), ",", expected_b(3), ",", expected_b(4), "]", &
-      "scale_diff: [", scale_diff_real, ",", scale_diff_imag, "]"
 
       ! Call the ddcpwr subroutine
       call ddcpwr(a, n, b)

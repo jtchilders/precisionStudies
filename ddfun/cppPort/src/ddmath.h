@@ -8,6 +8,7 @@ ddouble ddacosh(const ddouble& );
 ddouble ddadd(const ddouble&, const ddouble& );
 ddouble ddasinh(const ddouble& );
 ddouble ddatanh(const ddouble& );
+void ddcsshr(const ddouble &, ddouble &, ddouble &);
 void ddcssnr(const ddouble &, ddouble &, ddouble &);
 ddouble dddiv(const ddouble&, const ddouble& );
 ddouble dddivd(const ddouble&, const double );
