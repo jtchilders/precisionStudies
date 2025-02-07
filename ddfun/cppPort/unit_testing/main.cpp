@@ -4,6 +4,13 @@
 #include "test_ddadd.h"
 #include "test_ddasinh.h"
 #include "test_ddatanh.h"
+#include "test_ddcadd.h"
+#include "test_ddcdiv.h"
+#include "test_ddcmul.h"
+#include "test_ddcpwr.h"
+#include "test_ddcsqrt.h"
+#include "test_ddcssnr.h"
+#include "test_ddcsub.h"
 #include "test_dddiv.h"
 #include "test_dddivd.h"
 #include "test_ddexp.h"
@@ -29,6 +36,13 @@ int main(int argc, char* argv[]) {
    unittest_ddadd(path + "/ddadd_test_cases.bin");
    unittest_ddasinh(path + "/ddasinh_test_cases.bin");
    unittest_ddatanh(path + "/ddatanh_test_cases.bin");
+   unittest_ddcadd(path + "/ddcadd_test_cases.bin");
+   unittest_ddcdiv(path + "/ddcdiv_test_cases.bin");
+   unittest_ddcmul(path + "/ddcmul_test_cases.bin");
+   unittest_ddcpwr(path + "/ddcpwr_test_cases.bin");
+   unittest_ddcsqrt(path + "/ddcsqrt_test_cases.bin");
+   unittest_ddcssnr(path + "/ddcssnr_test_cases.bin");
+   unittest_ddcsub(path + "/ddcsub_test_cases.bin");
    unittest_dddiv(path + "/dddiv_test_cases.bin");
    unittest_dddivd(path + "/dddivd_test_cases.bin");
    unittest_ddexp(path + "/ddexp_test_cases.bin");

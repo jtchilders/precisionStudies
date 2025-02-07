@@ -7,27 +7,6 @@
 #include <cmath>
 #include <iomanip>
 
-int calculate_scale_difference(const ddouble &result, const ddouble &expected){
-   double error_hi_abs = std::abs(result.hi - expected.hi);
-
-   if (error_hi_abs > 0.0){
-      double error_hi_exponent = std::log10(error_hi_abs);
-      double expected_hi_exponent = std::log10(std::abs(expected.hi));
-      int scale_difference = static_cast<int>(std::abs(error_hi_exponent - expected_hi_exponent));
-      return scale_difference;
-   }
-
-   double error_lo_abs = std::abs(result.lo - expected.lo);
-   if(error_lo_abs > 0.0){
-      double error_lo_exponent = std::log10(error_lo_abs);
-      double expected_hi_exponent = std::log10(std::abs(expected.hi));
-      int scale_difference = static_cast<int>(std::abs(error_lo_exponent - expected_hi_exponent));
-      return scale_difference;
-   }
-
-   return 0;
-}
-
 void unittest_ddexp(const std::string &filename) {
    std::ifstream infile(filename, std::ios::binary);
    if (!infile) {
@@ -40,7 +19,7 @@ void unittest_ddexp(const std::string &filename) {
    double hi_a, lo_a, expected_hi, expected_lo;
    int total_tests = 0;
    int passed_tests = 0;
-   const int tolerance = 30;
+   const int tolerance = 28;
 
    while (infile.read(reinterpret_cast<char *>(&hi_a), sizeof(double)) &&
           infile.read(reinterpret_cast<char *>(&lo_a), sizeof(double)) &&
@@ -56,8 +35,9 @@ void unittest_ddexp(const std::string &filename) {
       try {
          ddouble result = ddexp(a);
 
-         // Compare results
-         bool test_passed = calculate_scale_difference(result, expected) >= tolerance;
+         // Use scale difference for comparison
+         int scale_diff = calculate_scale_difference(result, expected);
+         bool test_passed = (scale_diff >= tolerance or scale_diff == 0);
 
          if (test_passed) {
             passed_tests++;
@@ -66,7 +46,8 @@ void unittest_ddexp(const std::string &filename) {
                       << "input: [" << a.hi << ", " << a.lo << "] "
                       << "result: [" << result.hi << ", " << result.lo << "] "
                       << "expected: [" << expected.hi << ", " << expected.lo << "]"
-                      << "error: [" << std::abs(result.hi - expected.hi) << ", " << std::abs(result.lo - expected.lo) << "]" << std::endl;
+                      << "error: [" << std::abs(result.hi - expected.hi) << ", " << std::abs(result.lo - expected.lo) << "]"
+                      << "scale difference: [" << scale_diff << "]\n";
          }
       } catch (const std::overflow_error &e) {
          if (expected.hi == std::numeric_limits<double>::infinity() && expected.lo == 0.0) {

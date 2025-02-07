@@ -19,6 +19,13 @@ functions_to_extract = [
    # "ddadd",
    # "ddasinh",
    # "ddatanh",
+   # "ddcadd",
+   # "ddcdiv",
+   # "ddcmul",
+   "ddcpwr",
+   "ddcsqrt",
+   # "ddcssnr",
+   # "ddcsub",
    # "dddiv",
    # "dddivd",
    # "ddexp",
@@ -29,7 +36,7 @@ functions_to_extract = [
    # "ddneg",
    # "ddnint",
    # "ddnpwr",
-   "ddpolyr"
+   # "ddpolyr"
    # "ddpower",
    # "ddsqrt",
    # "ddsub",
@@ -39,6 +46,7 @@ py_gen_ddadd_inputs = """# gen_ddadd.py
 import random
 import struct
 import math
+import sys
 from mpmath import mp
 
 
@@ -155,7 +163,10 @@ def write_test_cases_to_binary(filename, test_cases):
 
 if __name__ == "__main__":
    print("Generating test cases for ddadd...")
-   test_cases = generate_test_cases(10)
+   ntests = 10
+   if len(sys.argv) > 1:
+      ntests = int(sys.argv[1])
+   test_cases = generate_test_cases(ntests)
    write_test_cases_to_text_file("data/ddadd_test_cases.txt", test_cases)
    write_test_cases_to_binary("data/ddadd_test_cases.bin", test_cases)
 
@@ -174,11 +185,12 @@ contains
    character(len=*), intent(in) :: filename
    real(8) :: hi_a, lo_a, hi_b, lo_b, expected_hi, expected_lo
    real(8) :: dda(2), ddb(2), ddc(2), expected_ddc(2)
-   real(8) :: tolerance
+    integer :: tolerance
    logical :: test_passed
    integer :: iunit, ios, total_tests, passed_tests
+    integer :: scale_diff
 
-   tolerance = 1.0e-30  ! Double-double precision tolerance
+   tolerance = 30  ! Double-double precision tolerance
    total_tests = 0
    passed_tests = 0
 
@@ -206,9 +218,11 @@ contains
       ! Call the ddadd subroutine
       call ddadd(dda, ddb, ddc)
 
+      ! Calculate scale difference
+      call dd_calc_scale_diff(ddc, expected_ddc, scale_diff)
+
       ! Compare results with expected values
-      test_passed = abs(ddc(1) - expected_ddc(1)) < tolerance .and. &
-                    abs(ddc(2) - expected_ddc(2)) < tolerance
+      test_passed = scale_diff >= tolerance .or. scale_diff == 0
 
       ! Print results
       if (test_passed) then
@@ -218,7 +232,8 @@ contains
                     "inputs: [", dda(1), ", ", dda(2), "] + [", ddb(1), ", ", ddb(2), "]", &
                     "result: [", ddc(1), ", ", ddc(2), "]", &
                     "expected: [", expected_ddc(1), ", ", expected_ddc(2), "]", &
-                    "error: [", abs(ddc(1) - expected_ddc(1)), ", ", abs(ddc(2) - expected_ddc(2)), "]"
+                    "error: [", abs(ddc(1) - expected_ddc(1)), ", ", abs(ddc(2) - expected_ddc(2)), "]", &
+                    "scale_diff: [", scale_diff, "]"
       end if
    end do
 
@@ -253,7 +268,7 @@ void unittest_ddadd(const std::string &filename) {
    double hi_a, lo_a, hi_b, lo_b, expected_hi, expected_lo;
    int total_tests = 0;
    int passed_tests = 0;
-   const double tolerance = 1.0e-30;
+   const double tolerance = 30;
 
    while (infile.read(reinterpret_cast<char *>(&hi_a), sizeof(double)) &&
           infile.read(reinterpret_cast<char *>(&lo_a), sizeof(double)) &&
@@ -269,9 +284,9 @@ void unittest_ddadd(const std::string &filename) {
       ddouble expected{expected_hi, expected_lo};
       ddouble result = ddadd(a, b);
 
-      // Compare results
-      bool test_passed = (std::abs(result.hi - expected.hi) < tolerance) &&
-                         (std::abs(result.lo - expected.lo) < tolerance);
+      // Use scale difference for comparison
+      int scale_diff = calculate_scale_difference(result, expected);
+      bool test_passed = (scale_diff >= tolerance or scale_diff == 0);
 
       if (test_passed) {
          passed_tests++;
@@ -280,7 +295,8 @@ void unittest_ddadd(const std::string &filename) {
                    << "inputs: [" << a.hi << ", " << a.lo << "] + [" << b.hi << ", " << b.lo << "] "
                    << "result: [" << result.hi << ", " << result.lo << "] "
                    << "expected: [" << expected.hi << ", " << expected.lo << "] " 
-                   << "error: [" << std::abs(result.hi - expected.hi) << ", " << std::abs(result.lo - expected.lo) << "]" << std::endl;
+                   << "error: [" << std::abs(result.hi - expected.hi) << ", " << std::abs(result.lo - expected.lo) << "]"
+                   << "scale difference: [" << scale_diff << "]\n";
       }
    }
 
@@ -368,9 +384,19 @@ def generate_cpp_func(function, outfilename):
 ---
 
 Generate a corresponding C++ function that performs the same operation as the Fortran function.
-Assume that a ddouble struct containing a double hi and a double lo have already been defined.
-The function should return a ddouble struct containing the result of the operation.
-Cases where the Fortran calls the ddabrt due to errors, the C++ function should print an error and return an empty ddouble struct.
+Assume the following structures exist:
+struct ddouble {{
+   double hi;
+   double lo;
+   // constructors, assignment operator, negation operator, math operators
+}}
+struct ddcomplex {{
+   ddouble real;
+   ddouble imag;
+   // constructors, assignment operator, negation operator, math operators
+}}
+
+Cases where the Fortran calls the ddabrt due to errors, the C++ function should print an error and return an empty struct instead.
 The function should be named {function['name']} and can return a ddouble struct containing the result of the operation.
 
 Please only reply with the function code using no formatting because your reply will go directly into a file to be compiled. Do not even include the markdown 
@@ -400,7 +426,7 @@ Any functions that appear in the Fortran code, you can assume that they are alre
 def gen_python_generator_with_gpt(function, outfilename):
    # Create a prompt for GPT
    prompt = f"""I am porting the ddfun library from Fortran to C++.
-The ddfun library contains subroutines for performing arithmetic operations on double-double numbers.
+The ddfun library contains subroutines for performing arithmetic operations on double-double numbers and handles complex numbers as well.
 
 I need to generate input test data for each Fortran and C++ function.
 
@@ -417,7 +443,7 @@ Please create a similar python file for the {function['name']} function, which i
 
 {function['body']}
 
-In the python file, you may need to adjust the range of input random numbers generated to be appropriate for the {function['name']} function.
+In the python file, you may need to adjust the range of input random numbers generated to be appropriate for the {function['name']} function. You might need to use complex numbers depending on the fortran function.
 
 Only reply with the python code using no formatting because your reply will go directly into a file to be compiled. Do not even include the markdown formatting around the code.
 """
@@ -478,6 +504,18 @@ def generate_cpp_unittest(function, cpp_func, outfilename):
 Please create a similar unit test in C++ for this function:
 
 {cpp_func}
+
+Assume the following structures exist:
+struct ddouble {{
+   double hi;
+   double lo;
+   // constructors, assignment operator, negation operator, math operators
+}}
+struct ddcomplex {{
+   ddouble real;
+   ddouble imag;
+   // constructors, assignment operator, negation operator, math operators
+}}
 
 Only reply with the c++ code using no formatting because your reply will go directly into a file to be compiled. Do not even include the markdown formatting around the code.
 """

@@ -2,6 +2,7 @@
 import random
 import struct
 import math
+import sys
 from mpmath import mp, log
 
 # Set high precision for calculations
@@ -106,7 +107,10 @@ def write_test_cases_to_binary(filename, test_cases):
     print(f"Test cases successfully written to {filename}")
 
 if __name__ == "__main__":
-    print("Generating test cases for ddlog...")
-    test_cases = generate_test_cases(10)
-    write_test_cases_to_text_file("data/ddlog_test_cases.txt", test_cases)
-    write_test_cases_to_binary("data/ddlog_test_cases.bin", test_cases)
+   print("Generating test cases for ddlog...")
+   ntests = 10
+   if len(sys.argv) > 1:
+      ntests = int(sys.argv[1])
+   test_cases = generate_test_cases(ntests)
+   write_test_cases_to_text_file("data/ddlog_test_cases.txt", test_cases)
+   write_test_cases_to_binary("data/ddlog_test_cases.bin", test_cases)

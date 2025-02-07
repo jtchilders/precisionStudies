@@ -2432,4 +2432,81 @@ b(4) = 0.d0
 return
 end subroutine ddxzc
 
+subroutine dd_calc_scale_diff(result, expected, ires)
+  !-------------------------------------------------------------------
+  ! dd_calc_scale_diff:
+  !   Emulates the logic of the C++ "calculate_scale_difference" function.
+  !   Takes two double-double variables, RES and EXP, each in the form
+  !   of a 2-element array (res(1) = hi, res(2) = lo). Returns an integer
+  !   measure of scale difference in the exponent.
+  !
+  !   If difference in the hi parts > 0, we compute:
+  !      scale_difference = int( abs( log10( abs( res_hi - exp_hi ) )
+  !                                  - log10( abs( exp_hi ) ) ) )
+  !   If hi parts differ by exactly 0, we check the lo parts in a similar way,
+  !   using exp_hi to gauge magnitude. If still zero, return 0.
+  !
+  !   In your unit test, compare this "ires" to a tolerance (like 30).
+  !
+  !    integer ires = dd_calc_scale_diff(result, expected)
+  !    if ( ires >= 30 ) then
+  !       ! Test passes
+  !    else
+  !       ! Test fails
+  !    endif
+  !
+  !-------------------------------------------------------------------
+    use, intrinsic :: iso_fortran_env, only: real64  ! or your ddknd parameter
+    implicit none
+    real(real64), intent(in) :: result(2), expected(2)   ! "double-double" arrays
+    integer :: ires
+    real(real64) :: error_hi_abs, error_lo_abs
+    real(real64) :: error_hi_exp, error_lo_exp, exp_hi_exp
+    real(real64) :: tiny = 0.0_real64
+  !-------------------------------------------------------------------
+  
+    ! Default result
+    ires = 0
+  
+    ! 1) Check difference in hi parts
+    error_hi_abs = abs( result(1) - expected(1) )
+
+    if (error_hi_abs > tiny) then
+      error_hi_exp = log10(error_hi_abs)
+      exp_hi_exp   = log10(abs( expected(1) ))
+      ires = int( abs( error_hi_exp - exp_hi_exp ) )
+      return
+    end if
+  
+    ! 2) If hi difference is zero, check difference in lo parts
+    error_lo_abs = abs( result(2) - expected(2) )
+    if (error_lo_abs > tiny) then
+       ! We'll still gauge the scale relative to exp(1) if that's nonzero
+       if (abs( expected(1) ) > tiny) then
+          error_lo_exp = log10(error_lo_abs)
+          exp_hi_exp   = log10(abs( expected(1) ))
+          ires = int( abs( error_lo_exp - exp_hi_exp ) )
+          return
+       else
+          ! If expected(1)=0 but expected(2) is nonzero, you could do something else
+          ! e.g. compare log10( error_lo_abs ) to log10( abs( exp(2) ) ).
+          ! For brevity we do:
+          if (abs(expected(2)) > tiny) then
+             error_lo_exp = log10(error_lo_abs)
+             exp_hi_exp   = log10(abs(expected(2)))
+             ires = int( abs(error_lo_exp - exp_hi_exp) )
+             return
+          end if
+          ! else if everything is zero except we have difference in lo => ires=999 or so
+          ires = 999
+          return
+       end if
+    end if
+  
+    ! 3) If both hi and lo differences are zero, return zero scale difference
+    ires = 0
+    return
+  end subroutine dd_calc_scale_diff
+  
+
 end module ddfuna

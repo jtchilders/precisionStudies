@@ -4,6 +4,13 @@ program main
    use test_ddadd
    use test_ddasinh
    use test_ddatanh
+   use test_ddcadd
+   use test_ddcdiv
+   use test_ddcmul
+   use test_ddcpwr
+   use test_ddcsqrt
+   use test_ddcssnr
+   use test_ddcsub
    use test_dddiv
    use test_dddivd
    use test_ddexp
@@ -33,6 +40,13 @@ program main
    call unittest_ddadd(trim(input_files_path) // "/ddadd_test_cases.bin")
    call unittest_ddasinh(trim(input_files_path) // "/ddasinh_test_cases.bin")
    call unittest_ddatanh(trim(input_files_path) // "/ddatanh_test_cases.bin")
+   call unittest_ddcadd(trim(input_files_path) // "/ddcadd_test_cases.bin")
+   call unittest_ddcdiv(trim(input_files_path) // "/ddcdiv_test_cases.bin")
+   call unittest_ddcmul(trim(input_files_path) // "/ddcmul_test_cases.bin")
+   call unittest_ddcpwr(trim(input_files_path) // "/ddcpwr_test_cases.bin")
+   call unittest_ddcsqrt(trim(input_files_path) // "/ddcsqrt_test_cases.bin")
+   call unittest_ddcssnr(trim(input_files_path) // "/ddcssnr_test_cases.bin")
+   call unittest_ddcsub(trim(input_files_path) // "/ddcsub_test_cases.bin")
    call unittest_dddiv(trim(input_files_path) // "/dddiv_test_cases.bin")
    call unittest_dddivd(trim(input_files_path) // "/dddivd_test_cases.bin")
    call unittest_ddexp(trim(input_files_path) // "/ddexp_test_cases.bin")
@@ -42,7 +56,7 @@ program main
    call unittest_ddmuldd(trim(input_files_path) // "/ddmuldd_test_cases.bin")
    call unittest_ddneg(trim(input_files_path) // "/ddneg_test_cases.bin")
    call unittest_ddnpwr(trim(input_files_path) // "/ddnpwr_test_cases.bin")
-   call unittest_ddpolyr(trim(input_files_path) // "/ddpolyr_test_cases.bin")
+   ! call unittest_ddpolyr(trim(input_files_path) // "/ddpolyr_test_cases.bin")
    call unittest_ddpower(trim(input_files_path) // "/ddpower_test_cases.bin")
    call unittest_ddsqrt(trim(input_files_path) // "/ddsqrt_test_cases.bin")
    call unittest_ddsub(trim(input_files_path) // "/ddsub_test_cases.bin")

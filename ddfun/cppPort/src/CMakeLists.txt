@@ -4,7 +4,9 @@ set(CPP_SRC
    ddmath.cpp
    ddmath.h
    ddouble.cpp
-   ddouble.h)
+   ddouble.h
+   ddcomplex.cpp
+   ddcomplex.h)
 
 add_library(ddmath STATIC ${CPP_SRC})
 

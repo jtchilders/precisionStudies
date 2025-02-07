@@ -6,6 +6,13 @@ set(TEST_SOURCES
    test_ddadd.f90
    test_ddasinh.f90
    test_ddatanh.f90
+   test_ddcadd.f90
+   test_ddcdiv.f90
+   test_ddcmul.f90
+   test_ddcpwr.f90
+   test_ddcsqrt.f90
+   test_ddcssnr.f90
+   test_ddcsub.f90
    test_dddiv.f90
    test_dddivd.f90
    test_ddexp.f90

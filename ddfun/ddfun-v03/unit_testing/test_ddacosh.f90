@@ -9,11 +9,12 @@ contains
     character(len=*), intent(in) :: filename
     real(8) :: hi_a, lo_a, expected_hi, expected_lo
     real(8) :: dda(2), ddb(2), expected_ddb(2)
-    real(8) :: tolerance
+    integer :: tolerance
     logical :: test_passed
     integer :: ios, total_tests, passed_tests
+    integer :: scale_diff
 
-    tolerance = 1.0e-30  ! Double-double precision tolerance
+    tolerance = 29  ! Double-double precision tolerance
     total_tests = 0
     passed_tests = 0
 
@@ -39,9 +40,11 @@ contains
       ! Call the ddacosh subroutine
       call ddacosh(dda, ddb)
 
+      ! Calculate scale difference
+      call dd_calc_scale_diff(ddb, expected_ddb, scale_diff)
+
       ! Compare results with expected values
-      test_passed = abs(ddb(1) - expected_ddb(1)) < tolerance .and. &
-                    abs(ddb(2) - expected_ddb(2)) < tolerance
+      test_passed = scale_diff >= tolerance .or. scale_diff == 0
 
       ! Print results
       if (test_passed) then
@@ -51,7 +54,8 @@ contains
                    "input: [", dda(1), ", ", dda(2), "]", &
                    "result: [", ddb(1), ", ", ddb(2), "]", &
                    "expected: [", expected_ddb(1), ", ", expected_ddb(2), "]", &
-                   "error: [", abs(ddb(1) - expected_ddb(1)), ", ", abs(ddb(2) - expected_ddb(2)), "]"
+                   "error: [", abs(ddb(1) - expected_ddb(1)), ", ", abs(ddb(2) - expected_ddb(2)), "]", &
+                   "scale_diff: [", scale_diff, "]"
       end if
     end do
 

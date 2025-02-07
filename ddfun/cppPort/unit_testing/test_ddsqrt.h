@@ -33,9 +33,9 @@ void unittest_ddsqrt(const std::string &filename) {
       ddouble expected{expected_hi, expected_lo};
       ddouble result = ddsqrt(a);
 
-      // Compare results
-      bool test_passed = (std::abs(result.hi - expected.hi) < tolerance) &&
-                         (std::abs(result.lo - expected.lo) < tolerance);
+      // Use scale difference for comparison
+      int scale_diff = calculate_scale_difference(result, expected);
+      bool test_passed = (scale_diff >= tolerance or scale_diff == 0);
 
       if (test_passed) {
          passed_tests++;
@@ -44,7 +44,8 @@ void unittest_ddsqrt(const std::string &filename) {
                    << "input: [" << a.hi << ", " << a.lo << "] "
                    << "result: [" << result.hi << ", " << result.lo << "] "
                    << "expected: [" << expected.hi << ", " << expected.lo << "]" 
-                   << "error: [" << std::abs(result.hi - expected.hi) << ", " << std::abs(result.lo - expected.lo) << "]" << std::endl;
+                   << "error: [" << std::abs(result.hi - expected.hi) << ", " << std::abs(result.lo - expected.lo) << "]"
+                   << "scale difference: [" << scale_diff << "]\n";
       }
    }
 

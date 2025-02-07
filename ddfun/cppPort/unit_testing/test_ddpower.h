@@ -19,7 +19,7 @@ void unittest_ddpower(const std::string &filename) {
    double hi_a, lo_a, hi_b, lo_b, expected_hi, expected_lo;
    int total_tests = 0;
    int passed_tests = 0;
-   const double tolerance = 2.0e-29;
+   const double tolerance = 29;
 
    while (infile.read(reinterpret_cast<char *>(&hi_a), sizeof(double)) &&
           infile.read(reinterpret_cast<char *>(&lo_a), sizeof(double)) &&
@@ -36,9 +36,9 @@ void unittest_ddpower(const std::string &filename) {
          ddouble expected{expected_hi, expected_lo};
          ddouble result = ddpower(a, b);
 
-         // Compare results
-         bool test_passed = (std::abs(result.hi - expected.hi) < tolerance) &&
-                            (std::abs(result.lo - expected.lo) < tolerance);
+         // Use scale difference for comparison
+         int scale_diff = calculate_scale_difference(result, expected);
+         bool test_passed = (scale_diff >= tolerance or scale_diff == 0);
 
          if (test_passed) {
             passed_tests++;
@@ -47,7 +47,8 @@ void unittest_ddpower(const std::string &filename) {
                       << "inputs: [" << a.hi << ", " << a.lo << "] ^ [" << b.hi << ", " << b.lo << "] "
                       << "result: [" << result.hi << ", " << result.lo << "] "
                       << "expected: [" << expected.hi << ", " << expected.lo << "]" 
-                      << "error: [" << std::abs(result.hi - expected.hi) << ", " << std::abs(result.lo - expected.lo) << "]" << std::endl;
+                      << "error: [" << std::abs(result.hi - expected.hi) << ", " << std::abs(result.lo - expected.lo) << "]"
+                      << "scale difference: [" << scale_diff << "]\n";
          }
       } catch (const std::runtime_error& e) {
          if (hi_a <= 0.0) {

@@ -3,6 +3,29 @@
 #include <iostream>
 #include <iomanip>
 
+
+#include <inttypes.h>
+/**
+ * Print the double 'x' in both decimal and hex form.
+ * The hex form shows its exact 64-bit pattern.
+ */
+void printDoubleBits(const char *label, double x)
+{
+    // We'll copy the double bits into a 64-bit integer.
+    // A union is a common trick, or we can use memcpy.
+    union {
+        double d;
+        uint64_t u;
+    } conv;
+
+    conv.d = x;
+
+    // Use C99's PRIx64 for a portable 64-bit hex format.
+    // %.16g prints up to 16 significant digits in decimal (just for reference).
+    std::printf("%s: decimal=%.16g, bits=0x%016" PRIx64 "\n", 
+                label, x, conv.u);
+}
+
 ddouble ddabs(const ddouble& a) {
     ddouble b;
     if (a.hi >= 0.0) {
@@ -74,7 +97,9 @@ ddouble ddatanh(const ddouble& a) {
     t1 = ddadd(f1, a);
     t2 = ddsub(f1, a);
     t3 = dddiv(t1, t2);
+
     t1 = ddlog(t3);
+    
     return ddmuld(t1, 0.5);
 }
 
@@ -165,7 +190,7 @@ ddouble ddexp(const ddouble& a) {
     ddouble al2 = {0.69314718055994529, 2.3190468138462996e-17};
     ddouble f = {1.0, 0.0};
     ddouble s0, s1, s2, s3, result;
-    
+
     if (fabs(a.hi) >= 300.0) {
         if (a.hi > 0.0) {
             // Error: Argument is too large
@@ -179,8 +204,10 @@ ddouble ddexp(const ddouble& a) {
 
     s0 = dddiv(a, al2);
     s1 = ddnint(s0);
+
     double t1 = s1.hi;
     nz = t1 + copysign(1e-14, t1);
+
     s2 = ddmul(al2, s1);
     s0 = ddsub(a, s2);
 
@@ -188,7 +215,7 @@ ddouble ddexp(const ddouble& a) {
         s0 = {1.0, 0.0};
         l1 = 0;
     } else {
-        s1 = dddivd(s0, pow(2.0, nq));
+        s1 = dddivd(s0, ldexp(1.0, nq)); // replaced pow(2.0,nq)
         s2 = {1.0, 0.0};
         s3 = {1.0, 0.0};
         l1 = 0;
@@ -216,7 +243,8 @@ ddouble ddexp(const ddouble& a) {
         }
     }
 
-    result = ddmuld(s0, pow(2.0, nz));
+    auto pow_nz = ldexp(1.0, nz); // replaced pow(2.0, nz)
+    result = ddmuld(s0, pow_nz);
     
     return result;
 }
@@ -232,12 +260,13 @@ ddouble ddlog(const ddouble &a) {
     double t2 = std::log(t1);
     b.hi = t2;
     b.lo = 0.0;
-
+    
     for (int k = 1; k <= 3; ++k) {
         ddouble s0 = ddexp(b);
         ddouble s1 = ddsub(a, s0);
         ddouble s2 = dddiv(s1, s0);
         ddouble s1_new = ddadd(b, s2);
+        
         b.hi = s1_new.hi;
         b.lo = s1_new.lo;
     }
@@ -279,6 +308,7 @@ ddouble ddmul(const ddouble& dda, const ddouble& ddb) {
 }
 
 
+
 ddouble ddmuld(const ddouble& dda, double db) {
     const double split = 134217729.0;
     double a1, a2, b1, b2, cona, conb, c11, c21, c2, e, t1, t2;
@@ -307,7 +337,7 @@ ddouble ddmuld(const ddouble& dda, double db) {
     ddouble ddc;
     ddc.hi = t1 + t2;
     ddc.lo = t2 - (ddc.hi - t1);
-
+    
     return ddc;
 }
 
@@ -537,3 +567,241 @@ ddouble ddsub(const ddouble& dda, const ddouble& ddb) {
     return ddc;
 }
 
+
+
+// Complex functions
+
+
+
+ddcomplex ddcpwr(const ddcomplex& a, const int& n) {
+    /* 
+!   This computes the N-th power of the ddC number A and returns the DDC
+!   result C in B. When N is zero, 1 is returned. When N is negative, the
+!   reciprocal of A ^ |N| is returned.
+
+!   This routine employs the binary method for exponentiation.
+
+    */
+    double cl2 = 1.4426950408889633;
+    ddcomplex s0,s1,s2,s3;
+
+    if (a.real.hi == 0.0 && a.imag.hi == 0.0) {
+        if (n >= 0)
+            return ddcomplex();
+        else{
+            printf("DDCPWR: Argument is zero and N is negative or zero.\n");
+            return ddcomplex();
+        }
+    }
+    int nn = abs(n);
+    if (nn == 0) {
+        return ddcomplex(1.0);
+    } else if (nn == 1) {
+        s2 = a;
+        if (n < 0){ //   Compute reciprocal if N is negative.
+            s1.real.hi = 1.0;
+            s0 = s1 / s2;
+            s2 = s0;
+        }
+        return s2;
+    } else if (nn == 2) {
+        s2 = a * a;
+        if (n < 0){ //   Compute reciprocal if N is negative.
+            s1.real.hi = 1.0;
+            s0 = s1 / s2;
+            s2 = s0;
+        }
+        return s2;
+    }
+
+    //   Determine the least integer MN such that 2 ^ MN > NN.
+
+    int t1 = nn;
+    int mn = cl2 * std::log(t1) + 1.0e0 + 1.0e-14;
+
+    s0 = a;
+    s2.real.hi = 1.0;
+    int kn = nn;
+
+
+    //   Compute B ^ N using the binary rule for exponentiation.
+    int kk = 0;
+    for (int i = 1; i <= mn; i++) {
+        kk = kn / 2;
+        if (kn % 2 == 1) {
+            s2 = s0 * s2;
+        }
+        kn = kk;
+        if (i < mn) {
+            s0 = s0 * s0;
+        }
+    }
+
+    if (n < 0){ //   Compute reciprocal if N is negative.
+        s1.real.hi = 1.0;
+        s0 = s1 / s2;
+        s2 = s0;
+    }
+
+    return s2;
+}
+
+
+ddcomplex ddsqrt(const ddcomplex& a) {
+    /*
+!   This routine computes the complex square root of the DDC number C.
+!   This routine uses the following formula, where A1 and A2 are the real and
+!   imaginary parts of A, and where R = Sqrt [A1 ^ 2 + A2 ^2]:
+
+!      B = Sqrt [(R + A1) / 2] + I Sqrt [(R - A1) / 2]
+
+!   If the imaginary part of A is < 0, then the imaginary part of B is also
+!   set to be < 0.
+*/
+    ddouble s0,s1,s2;
+    ddcomplex b;
+
+    if (a.real.hi == 0.0 && a.imag.hi == 0.0)
+        return ddcomplex();
+    
+    s0 = a.real * a.real;
+    s1 = a.imag * a.imag;
+    s2 = s0 + s1;
+    s0 = ddsqrt(s2);
+
+    s1 = a.real;
+    if (a.real.hi < 0.0)
+        s1 = -s1;
+    s2 = s0 + s1;
+    s1 = s2 * 0.5;
+    s0 = ddsqrt(s1);
+    s1 = s0 * 2.0;
+    if (a.real.hi >= 0.0){
+        b.real = s0;
+        b.imag = a.imag / s1;
+    }
+    else{
+        b.real = a.imag / s1;
+        if (b.real.hi < 0.0)
+            b.real = -b.real;
+        b.imag = s0;
+        if (a.imag.hi < 0.0)
+            b.imag = -b.imag;
+    }
+
+    return b;
+}
+
+void ddcssnr(const ddouble &a, ddouble &x, ddouble &y) {
+    /*
+
+!   This computes the cosine and sine of the DDR number A and returns the
+!   two DDR results in X and Y, respectively.
+
+!   This routine uses the conventional Taylor series for Sin (s):
+
+!   Sin (s) =  s - s^3 / 3! + s^5 / 5! - s^7 / 7! ...
+
+!   where the argument S has been reduced to (-pi, pi). To further accelerate
+!   convergence of the series, the reduced argument is divided by 2^NQ. After
+!   convergence, the double-angle formulas for cos are applied NQ times.
+*/
+    const int itrmx = 1000, nq = 5;
+    const double eps = 1.0e-32;
+    const ddouble pi = {3.1415926535897931, 1.2246467991473532e-16};
+    
+    int na = 2;
+    if (a.hi == 0.0) na = 0;
+    if (na == 0) {
+        x.hi = 1.0;
+        x.lo = 0.0;
+        y.hi = 0.0;
+        y.lo = 0.0;
+        return;
+    }
+    
+    ddouble f1 = {1.0, 0.0}, f2 = {0.5, 0.0};
+    
+    if (a.hi >= 1.0e60) {
+        std::cerr << "*** DDCSSNR: argument is too large to compute cos or sin." << std::endl;
+        return;
+    }
+    
+    ddouble s0 = ddmuld(pi, 2.0);
+    ddouble s1 = dddiv(a, s0);
+    ddouble s2 = ddnint(s1);
+    ddouble s3 = ddsub(a, ddmul(s0, s2));
+    
+    if (s3.hi == 0.0) {
+        x.hi = 1.0;
+        x.lo = 0.0;
+        y.hi = 0.0;
+        y.lo = 0.0;
+        return;
+    }
+    
+    s0 = dddivd(s3, std::pow(2.0, nq));
+    s1 = s0;
+    
+    ddouble s2_squared = ddmul(s0, s0);
+    int is = (s0.hi < 0.0) ? -1 : 1;
+    
+    for (int i1 = 1; i1 <= itrmx; ++i1) {
+        double t2 = -(2.0 * i1) * (2.0 * i1 + 1.0);
+        ddouble s3 = ddmul(s2_squared, s1);
+        s1 = dddivd(s3, t2);
+        s3 = ddadd(s1, s0);
+        s0 = s3;
+        if (std::abs(s1.hi) < eps) break;
+        if (i1 == itrmx) {
+            std::cerr << "*** DDCSSNR: Iteration limit exceeded." << std::endl;
+            return;
+        }
+    }
+    
+    ddouble s4 = ddmul(s0, s0);
+    ddouble s5 = ddsub(f2, s4);
+    s0 = ddmuld(s5, 2.0);
+    
+    for (int j = 2; j <= nq; ++j) {
+        s4 = ddmul(s0, s0);
+        s5 = ddsub(s4, f2);
+        s0 = ddmuld(s5, 2.0);
+    }
+    
+    s4 = ddmul(s0, s0);
+    s5 = ddsub(f1, s4);
+    s1 = ddsqrt(s5);
+    
+    if (is < 1) {
+        s1.hi = -s1.hi;
+        s1.lo = -s1.lo;
+    }
+    
+    x = s0;
+    y = s1;
+    
+}
+
+
+// Function to calculate scale difference
+int calculate_scale_difference(const ddouble &result, const ddouble &expected) {
+   double error_hi_abs = std::abs(result.hi - expected.hi);
+
+   if (error_hi_abs > 0.0) {
+      double error_hi_exponent = std::log10(error_hi_abs);
+      double expected_hi_exponent = std::log10(std::abs(expected.hi));
+      int scale_difference = static_cast<int>(std::abs(error_hi_exponent - expected_hi_exponent));
+      return scale_difference;
+   }
+
+   double error_lo_abs = std::abs(result.lo - expected.lo);
+   if (error_lo_abs > 0.0) {
+      double error_lo_exponent = std::log10(error_lo_abs);
+      double expected_hi_exponent = std::log10(std::abs(expected.hi));
+      int scale_difference = static_cast<int>(std::abs(error_lo_exponent - expected_hi_exponent));
+      return scale_difference;
+   }
+
+   return 0;
+}

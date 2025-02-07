@@ -2,10 +2,13 @@
    "C_Cpp.default.includePath": [
       "${workspaceFolder}/cppPort/src",
       "${workspaceFolder}/cppPort/unit_testing",
+      "${workspaceFolder}/kokkosPort/src",
+      "${workspaceFolder}/kokkosPort/unit_testing",
       "${workspaceFolder}/ddfun-v03/fortran",
       "${workspaceFolder}/ddfun-v03/unit_testing",
    ],
    "C_Cpp.default.systemIncludePath": [
+      "/vast/projects/datascience/parton/kokkos/kokkos-4.5.00/Kokkos_ARCH_VOLTA70/Release/kokkos/install/include",
       "/soft/compilers/cuda/cuda-12.3.0/include",
       "/soft/compilers/gcc/12.2.0/x86_64-suse-linux/lib/gcc/x86_64-pc-linux-gnu/12.2.0/include",
       "/soft/compilers/gcc/12.2.0/x86_64-suse-linux/include/c++/12.2.0",
@@ -83,7 +86,12 @@
       "filesystem": "cpp",
       "cassert": "cpp",
       "__locale": "cpp",
-      "ios": "cpp"
+      "ios": "cpp",
+      "cinttypes": "cpp",
+      "complex": "cpp",
+      "map": "cpp",
+      "set": "cpp",
+      "span": "cpp"
    },
    "cmake.sourceDirectory": "/home/jchilders/git/precisionStudies/ddfun",
    "fortran.fortls.disabled": true

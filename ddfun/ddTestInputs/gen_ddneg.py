@@ -1,6 +1,7 @@
 # gen_ddneg.py
 import random
 import struct
+import sys
 from mpmath import mp
 
 # Set high precision for calculations
@@ -87,6 +88,9 @@ def write_test_cases_to_binary(filename, test_cases):
 
 if __name__ == "__main__":
    print("Generating test cases for ddneg...")
-   test_cases = generate_test_cases(10)
+   ntests = 10
+   if len(sys.argv) > 1:
+      ntests = int(sys.argv[1])
+   test_cases = generate_test_cases(ntests)
    write_test_cases_to_text_file("data/ddneg_test_cases.txt", test_cases)
    write_test_cases_to_binary("data/ddneg_test_cases.bin", test_cases)

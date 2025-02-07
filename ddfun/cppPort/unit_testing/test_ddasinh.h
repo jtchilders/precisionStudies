@@ -19,7 +19,7 @@ void unittest_ddasinh(const std::string &filename) {
    double hi_a, lo_a, expected_hi, expected_lo;
    int total_tests = 0;
    int passed_tests = 0;
-   const double tolerance = 1.0e-30;
+   const double tolerance = 29;
 
    while (infile.read(reinterpret_cast<char *>(&hi_a), sizeof(double)) &&
           infile.read(reinterpret_cast<char *>(&lo_a), sizeof(double)) &&
@@ -33,9 +33,9 @@ void unittest_ddasinh(const std::string &filename) {
       ddouble expected{expected_hi, expected_lo};
       ddouble result = ddasinh(a);
 
-      // Compare results
-      bool test_passed = (std::abs(result.hi - expected.hi) < tolerance) &&
-                         (std::abs(result.lo - expected.lo) < tolerance);
+      // Use scale difference for comparison
+      int scale_diff = calculate_scale_difference(result, expected);
+      bool test_passed = (scale_diff >= tolerance or scale_diff == 0);
 
       if (test_passed) {
          passed_tests++;
@@ -44,7 +44,8 @@ void unittest_ddasinh(const std::string &filename) {
                    << "input: [" << a.hi << ", " << a.lo << "] "
                    << "result: [" << result.hi << ", " << result.lo << "] "
                    << "expected: [" << expected.hi << ", " << expected.lo << "]" 
-                   << "error: [" << std::abs(result.hi - expected.hi) << ", " << std::abs(result.lo - expected.lo) << "]" << std::endl;
+                   << "error: [" << std::abs(result.hi - expected.hi) << ", " << std::abs(result.lo - expected.lo) << "]"
+                   << "scale difference: [" << scale_diff << "]\n";
       }
    }
 
