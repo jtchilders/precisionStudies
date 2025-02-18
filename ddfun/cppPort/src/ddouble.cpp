@@ -2,6 +2,9 @@
 #include "ddmath.h"
 #include <cmath>
 
+namespace ddfun{
+   
+
 ddouble::ddouble() : hi(0.0), lo(0.0)  {};
 ddouble::ddouble(double h) : hi(h), lo(0.0) {};
 ddouble::ddouble(double h, double l) : hi(h), lo(l) {};
@@ -92,4 +95,6 @@ ddouble ddouble::atanh() const{
 std::ostream& operator<<(std::ostream& os, const ddouble& dd) {
    os << "[ " <<dd.hi << ", " << dd.lo << " ]";
    return os;
+}
+
 }

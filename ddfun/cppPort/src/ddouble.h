@@ -2,6 +2,8 @@
 #pragma once
 #include <iostream>
 
+namespace ddfun{
+   
 struct ddouble{
    double hi;
    double lo;
@@ -46,3 +48,6 @@ struct ddouble{
    // print operator
    friend std::ostream& operator<<(std::ostream& os, const ddouble& dd);
 };
+
+
+}

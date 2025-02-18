@@ -1,5 +1,8 @@
 #include "ddcomplex.h"
 
+namespace ddfun{
+   
+
 ddcomplex::ddcomplex() : real(0.0), imag(0.0) {};
 ddcomplex::ddcomplex(const ddouble& real) : real(real), imag(0.0) {};
 ddcomplex::ddcomplex(const double& real) : real(real), imag(0.0) {};
@@ -61,3 +64,6 @@ ddcomplex ddcomplex::operator/(const ddcomplex& b) const {
 
    return ddcomplex(s2 * s0, s1 * s0);
 }
+
+
+} // namespace ddfun

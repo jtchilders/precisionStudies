@@ -1,6 +1,7 @@
 #pragma once
 #include "Kokkos_Core.hpp"
 #include "ddouble.h"
+#include "ddcomplex.h"
 #include <cmath>
 #include <iostream>
 #include <iomanip>
@@ -11,6 +12,9 @@ KOKKOS_INLINE_FUNCTION ddouble ddacosh(const ddouble& );
 KOKKOS_INLINE_FUNCTION ddouble ddasinh(const ddouble& );
 KOKKOS_INLINE_FUNCTION ddouble ddacosh(const ddouble& );
 KOKKOS_INLINE_FUNCTION ddouble ddatanh(const ddouble& );
+KOKKOS_INLINE_FUNCTION void ddcsshr(const ddouble &, ddouble &, ddouble &);
+KOKKOS_INLINE_FUNCTION void ddcssnr(const ddouble &, ddouble &, ddouble &);
+KOKKOS_INLINE_FUNCTION ddouble dddivd(const ddouble&, const double&);
 KOKKOS_INLINE_FUNCTION ddouble ddexp(const ddouble& );
 KOKKOS_INLINE_FUNCTION ddouble ddlog(const ddouble& );
 KOKKOS_INLINE_FUNCTION ddouble ddmuld(const ddouble& , const double& );
@@ -19,6 +23,11 @@ KOKKOS_INLINE_FUNCTION ddouble ddnint(const ddouble& );
 KOKKOS_INLINE_FUNCTION ddouble ddnpwr(const ddouble& , const int& );
 KOKKOS_INLINE_FUNCTION ddouble ddpower(const ddouble& , const ddouble& );
 KOKKOS_INLINE_FUNCTION ddouble ddsqrt(const ddouble& );
+
+// Complex function declarations:
+KOKKOS_INLINE_FUNCTION ddcomplex ddcpwr(const ddcomplex& , const int& );
+KOKKOS_INLINE_FUNCTION ddcomplex ddcsqrt(const ddcomplex& );
+
 
 /**
  * Print the double 'x' in both decimal and hex form.
@@ -101,6 +110,115 @@ KOKKOS_INLINE_FUNCTION ddouble ddatanh(const ddouble& a) {
    t1 = ddlog(t3);
 
    return ddmuld(t1, 0.5);
+}
+
+
+KOKKOS_INLINE_FUNCTION void ddcsshr(const ddouble& a, ddouble& x, ddouble& y) {
+    /*
+!   This computes the hyperbolic cosine and sine of the DDR number A and
+!   returns the two DDR results in X and Y, respectively. 
+*/
+    ddouble f = {1.0, 0.0};
+    ddouble s0, s1, s2;
+
+    s0 = ddexp(a);
+    s1 = f / s0;
+    s2 = s0 + s1;
+    x = ddmuld(s2, 0.5);
+    s2 = s0 - s1;
+    y = ddmuld(s2, 0.5);
+}
+
+
+KOKKOS_INLINE_FUNCTION void ddcssnr(const ddouble &a, ddouble &x, ddouble &y) {
+    /*
+
+!   This computes the cosine and sine of the DDR number A and returns the
+!   two DDR results in X and Y, respectively.
+
+!   This routine uses the conventional Taylor series for Sin (s):
+
+!   Sin (s) =  s - s^3 / 3! + s^5 / 5! - s^7 / 7! ...
+
+!   where the argument S has been reduced to (-pi, pi). To further accelerate
+!   convergence of the series, the reduced argument is divided by 2^NQ. After
+!   convergence, the double-angle formulas for cos are applied NQ times.
+*/
+    const int itrmx = 1000, nq = 5;
+    const double eps = 1.0e-32;
+    const ddouble pi = {3.1415926535897931, 1.2246467991473532e-16};
+    
+    int na = 2;
+    if (a.hi == 0.0) na = 0;
+    if (na == 0) {
+        x.hi = 1.0;
+        x.lo = 0.0;
+        y.hi = 0.0;
+        y.lo = 0.0;
+        return;
+    }
+    
+    ddouble f1 = {1.0, 0.0}, f2 = {0.5, 0.0};
+    
+    if (a.hi >= 1.0e60) {
+        Kokkos::printf("*** DDCSSNR: argument is too large to compute cos or sin.\n");
+        return;
+    }
+    
+    ddouble s0 = ddmuld(pi, 2.0);
+    ddouble s1 = a / s0;
+    ddouble s2 = ddnint(s1);
+    ddouble s3 = a - (s0 * s2);
+    
+    if (s3.hi == 0.0) {
+        x.hi = 1.0;
+        x.lo = 0.0;
+        y.hi = 0.0;
+        y.lo = 0.0;
+        return;
+    }
+    
+    s0 = dddivd(s3, ldexp(1.0, nq));
+    s1 = s0;
+    
+    ddouble s2_squared = s0 * s0;
+    int is = (s0.hi < 0.0) ? -1 : 1;
+    
+    for (int i1 = 1; i1 <= itrmx; ++i1) {
+        double t2 = -(2.0 * i1) * (2.0 * i1 + 1.0);
+        ddouble s3 = s2_squared * s1;
+        s1 = dddivd(s3, t2);
+        s3 = s1 + s0;
+        s0 = s3;
+        if (Kokkos::abs(s1.hi) < eps) break;
+        if (i1 == itrmx) {
+            Kokkos::printf("*** DDCSSNR: Iteration limit exceeded.\n");
+            return;
+        }
+    }
+    
+    ddouble s4 = s0 * s0;
+    ddouble s5 = f2 - s4; 
+    s0 = ddmuld(s5, 2.0);
+    
+    for (int j = 2; j <= nq; ++j) {
+        s4 = s0 * s0; 
+        s5 = s4 - f2;
+        s0 = ddmuld(s5, 2.0);
+    }
+    
+    s4 = s0 * s0; 
+    s5 = f1 - s4;
+    s1 = ddsqrt(s5);
+    
+    if (is < 1) {
+        s1.hi = -s1.hi;
+        s1.lo = -s1.lo;
+    }
+    
+    x = s0;
+    y = s1;
+    
 }
 
 KOKKOS_INLINE_FUNCTION ddouble dddivd(const ddouble& dda, const double& db) {
@@ -467,6 +585,129 @@ KOKKOS_INLINE_FUNCTION ddouble ddsqrt(const ddouble& a) {
 
    return b;
 }
+
+
+// complex functions
+
+KOKKOS_INLINE_FUNCTION ddcomplex ddcpwr(const ddcomplex& a, const int& n) {
+    /* 
+!   This computes the N-th power of the ddC number A and returns the DDC
+!   result C in B. When N is zero, 1 is returned. When N is negative, the
+!   reciprocal of A ^ |N| is returned.
+
+!   This routine employs the binary method for exponentiation.
+
+    */
+    double cl2 = 1.4426950408889633;
+    ddcomplex s0,s1,s2,s3;
+
+    if (a.real.hi == 0.0 && a.imag.hi == 0.0) {
+        if (n >= 0)
+            return ddcomplex();
+        else{
+            printf("DDCPWR: Argument is zero and N is negative or zero.\n");
+            return ddcomplex();
+        }
+    }
+    int nn = abs(n);
+    if (nn == 0) {
+        return ddcomplex(1.0);
+    } else if (nn == 1) {
+        s2 = a;
+        if (n < 0){ //   Compute reciprocal if N is negative.
+            s1.real.hi = 1.0;
+            s0 = s1 / s2;
+            s2 = s0;
+        }
+        return s2;
+    } else if (nn == 2) {
+        s2 = a * a;
+        if (n < 0){ //   Compute reciprocal if N is negative.
+            s1.real.hi = 1.0;
+            s0 = s1 / s2;
+            s2 = s0;
+        }
+        return s2;
+    }
+
+    //   Determine the least integer MN such that 2 ^ MN > NN.
+
+    int t1 = nn;
+    int mn = cl2 * std::log(t1) + 1.0e0 + 1.0e-14;
+
+    s0 = a;
+    s2.real.hi = 1.0;
+    int kn = nn;
+
+
+    //   Compute B ^ N using the binary rule for exponentiation.
+    int kk = 0;
+    for (int i = 1; i <= mn; i++) {
+        kk = kn / 2;
+        if (kn % 2 == 1) {
+            s2 = s0 * s2;
+        }
+        kn = kk;
+        if (i < mn) {
+            s0 = s0 * s0;
+        }
+    }
+
+    if (n < 0){ //   Compute reciprocal if N is negative.
+        s1.real.hi = 1.0;
+        s0 = s1 / s2;
+        s2 = s0;
+    }
+
+    return s2;
+}
+
+
+KOKKOS_INLINE_FUNCTION ddcomplex ddcsqrt(const ddcomplex& a) {
+/*
+!   This routine computes the complex square root of the DDC number C.
+!   This routine uses the following formula, where A1 and A2 are the real and
+!   imaginary parts of A, and where R = Sqrt [A1 ^ 2 + A2 ^2]:
+
+!      B = Sqrt [(R + A1) / 2] + I Sqrt [(R - A1) / 2]
+
+!   If the imaginary part of A is < 0, then the imaginary part of B is also
+!   set to be < 0.
+*/
+    ddouble s0,s1,s2;
+    ddcomplex b;
+
+    if (a.real.hi == 0.0 && a.imag.hi == 0.0)
+        return ddcomplex();
+    
+    s0 = a.real * a.real;
+    s1 = a.imag * a.imag;
+    s2 = s0 + s1;
+    s0 = ddsqrt(s2);
+
+    s1 = a.real;
+    if (a.real.hi < 0.0)
+        s1 = -s1;
+    s2 = s0 + s1;
+    s1 = s2 * 0.5;
+    s0 = ddsqrt(s1);
+    s1 = s0 * 2.0;
+    if (a.real.hi >= 0.0){
+        b.real = s0;
+        b.imag = a.imag / s1;
+    }
+    else{
+        b.real = a.imag / s1;
+        if (b.real.hi < 0.0)
+            b.real = -b.real;
+        b.imag = s0;
+        if (a.imag.hi < 0.0)
+            b.imag = -b.imag;
+    }
+
+    return b;
+}
+
 
 
 // Function to calculate scale difference

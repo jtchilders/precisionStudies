@@ -91,7 +91,11 @@
       "complex": "cpp",
       "map": "cpp",
       "set": "cpp",
-      "span": "cpp"
+      "span": "cpp",
+      "csignal": "cpp",
+      "list": "cpp",
+      "regex": "cpp",
+      "future": "cpp"
    },
    "cmake.sourceDirectory": "/home/jchilders/git/precisionStudies/ddfun",
    "fortran.fortls.disabled": true

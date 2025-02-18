@@ -1,6 +1,9 @@
 #pragma once
 #include "ddouble.h"
 
+namespace ddfun{
+   
+
 // ddcomplex data type which uses ddouble precision for real and imag
 struct ddcomplex {
    ddouble real;
@@ -21,3 +24,5 @@ struct ddcomplex {
    ddcomplex operator/(const ddcomplex& b) const;
 
 };
+
+}

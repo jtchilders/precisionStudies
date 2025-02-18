@@ -4,6 +4,14 @@ set(CPP_UNIT_TEST_DEPS
    test_ddadd.h
    test_ddasinh.h
    test_ddatanh.h
+   test_ddcadd.h
+   test_ddcdiv.h
+   test_ddcmul.h
+   test_ddcpwr.h
+   test_ddcsqrt.h
+   test_ddcsshr.h
+   test_ddcssnr.h
+   test_ddcsub.h
    test_dddiv.h
    test_dddivd.h
    test_ddexp.h

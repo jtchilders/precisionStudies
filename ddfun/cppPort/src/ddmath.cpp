@@ -2,9 +2,11 @@
 #include <cmath>
 #include <iostream>
 #include <iomanip>
-
-
 #include <inttypes.h>
+
+
+namespace ddfun {
+
 /**
  * Print the double 'x' in both decimal and hex form.
  * The hex form shows its exact 64-bit pattern.
@@ -103,50 +105,6 @@ ddouble ddatanh(const ddouble& a) {
     return ddmuld(t1, 0.5);
 }
 
-ddcomplex ddcsqrt(const ddcomplex& a) {
-    /*
-!   This routine computes the complex square root of the DDC number C.
-!   This routine uses the following formula, where A1 and A2 are the real and
-!   imaginary parts of A, and where R = Sqrt [A1 ^ 2 + A2 ^2]:
-
-!      B = Sqrt [(R + A1) / 2] + I Sqrt [(R - A1) / 2]
-
-!   If the imaginary part of A is < 0, then the imaginary part of B is also
-!   set to be < 0.
-    */
-
-    ddouble s0,s1,s2;
-    ddcomplex b;
-
-    if (a.real.hi == 0.0 && a.imag.hi == 0.0)
-        return ddcomplex();
-
-    s0 = a.real * a.real;
-    s1 = a.imag * a.imag;
-    s2 = s0 + s1;
-    s0 = ddsqrt(s2);
-
-    s1 = a.real;
-    if (s1.hi < 0.0)
-        s1 = -s1;
-    s2 = s0 + s1;
-    s1 = ddmuld(s2, 0.5);
-    s0 = ddsqrt(s1);
-    s1 = ddmuld(s0, 2.0);
-    if (a.real.hi >= 0.0){
-        b.real = s0;
-        b.imag = a.imag / s1;
-    } else {
-        b.real = a.imag / s1;
-        if ( b.real.hi < 0.0)
-            b.real = - b.real;
-        b.imag = s0;
-        if (a.imag.hi < 0.0)
-            b.imag = -b.imag;
-    }
-
-    return b;
-}
 
 void ddcsshr(const ddouble& a, ddouble& x, ddouble& y) {
     /*
@@ -722,9 +680,52 @@ ddouble ddsub(const ddouble& dda, const ddouble& ddb) {
 }
 
 
+ddcomplex ddsqrt(const ddcomplex& a) {
+    /*
+!   This routine computes the complex square root of the DDC number C.
+!   This routine uses the following formula, where A1 and A2 are the real and
+!   imaginary parts of A, and where R = Sqrt [A1 ^ 2 + A2 ^2]:
 
-// Complex functions
+!      B = Sqrt [(R + A1) / 2] + I Sqrt [(R - A1) / 2]
 
+!   If the imaginary part of A is < 0, then the imaginary part of B is also
+!   set to be < 0.
+*/
+    ddouble s0,s1,s2;
+    ddcomplex b;
+
+    if (a.real.hi == 0.0 && a.imag.hi == 0.0)
+        return ddcomplex();
+    
+    s0 = a.real * a.real;
+    s1 = a.imag * a.imag;
+    s2 = s0 + s1;
+    s0 = ddsqrt(s2);
+
+    s1 = a.real;
+    if (a.real.hi < 0.0)
+        s1 = -s1;
+    s2 = s0 + s1;
+    s1 = s2 * 0.5;
+    s0 = ddsqrt(s1);
+    s1 = s0 * 2.0;
+    if (a.real.hi >= 0.0){
+        b.real = s0;
+        b.imag = a.imag / s1;
+    }
+    else{
+        b.real = a.imag / s1;
+        if (b.real.hi < 0.0)
+            b.real = -b.real;
+        b.imag = s0;
+        if (a.imag.hi < 0.0)
+            b.imag = -b.imag;
+    }
+
+    return b;
+}
+
+// complex functions
 
 
 ddcomplex ddcpwr(const ddcomplex& a, const int& n) {
@@ -801,7 +802,7 @@ ddcomplex ddcpwr(const ddcomplex& a, const int& n) {
 }
 
 
-ddcomplex ddsqrt(const ddcomplex& a) {
+ddcomplex ddcsqrt(const ddcomplex& a) {
     /*
 !   This routine computes the complex square root of the DDC number C.
 !   This routine uses the following formula, where A1 and A2 are the real and
@@ -811,33 +812,33 @@ ddcomplex ddsqrt(const ddcomplex& a) {
 
 !   If the imaginary part of A is < 0, then the imaginary part of B is also
 !   set to be < 0.
-*/
+    */
+
     ddouble s0,s1,s2;
     ddcomplex b;
 
     if (a.real.hi == 0.0 && a.imag.hi == 0.0)
         return ddcomplex();
-    
+
     s0 = a.real * a.real;
     s1 = a.imag * a.imag;
     s2 = s0 + s1;
     s0 = ddsqrt(s2);
 
     s1 = a.real;
-    if (a.real.hi < 0.0)
+    if (s1.hi < 0.0)
         s1 = -s1;
     s2 = s0 + s1;
-    s1 = s2 * 0.5;
+    s1 = ddmuld(s2, 0.5);
     s0 = ddsqrt(s1);
-    s1 = s0 * 2.0;
+    s1 = ddmuld(s0, 2.0);
     if (a.real.hi >= 0.0){
         b.real = s0;
         b.imag = a.imag / s1;
-    }
-    else{
+    } else {
         b.real = a.imag / s1;
-        if (b.real.hi < 0.0)
-            b.real = -b.real;
+        if ( b.real.hi < 0.0)
+            b.real = - b.real;
         b.imag = s0;
         if (a.imag.hi < 0.0)
             b.imag = -b.imag;
@@ -847,24 +848,4 @@ ddcomplex ddsqrt(const ddcomplex& a) {
 }
 
 
-// Function to calculate scale difference
-int calculate_scale_difference(const ddouble &result, const ddouble &expected) {
-   double error_hi_abs = std::abs(result.hi - expected.hi);
-
-   if (error_hi_abs > 0.0) {
-      double error_hi_exponent = std::log10(error_hi_abs);
-      double expected_hi_exponent = std::log10(std::abs(expected.hi));
-      int scale_difference = static_cast<int>(std::abs(error_hi_exponent - expected_hi_exponent));
-      return scale_difference;
-   }
-
-   double error_lo_abs = std::abs(result.lo - expected.lo);
-   if (error_lo_abs > 0.0) {
-      double error_lo_exponent = std::log10(error_lo_abs);
-      double expected_hi_exponent = std::log10(std::abs(expected.hi));
-      int scale_difference = static_cast<int>(std::abs(error_lo_exponent - expected_hi_exponent));
-      return scale_difference;
-   }
-
-   return 0;
-}
+} // namespace ddfun

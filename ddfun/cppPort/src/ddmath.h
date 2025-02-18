@@ -3,6 +3,8 @@
 #include "ddcomplex.h"
 #include <vector>
 
+namespace ddfun{
+   
 ddouble ddabs(const ddouble& );
 ddouble ddacosh(const ddouble& );
 ddouble ddadd(const ddouble&, const ddouble& );
@@ -28,4 +30,5 @@ ddouble ddsub(const ddouble&, const ddouble& );
 ddcomplex ddcpwr(const ddcomplex& , const int& );
 ddcomplex ddcsqrt(const ddcomplex& );
 
-int calculate_scale_difference(const ddouble &, const ddouble & );
+
+}
